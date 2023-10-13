@@ -1,6 +1,7 @@
 {
   "projects": {
     "dev": "demo-p0tion",
-    "prod": "p0tion-ci-environment"
+    "prod": "nocturne-p0tion",
+    "default": "nocturne-p0tion"
   }
 }

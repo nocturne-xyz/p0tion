@@ -78,7 +78,14 @@ export const resumeContributionAfterTimeoutExpiration = async (
 export const createS3Bucket = async (functions: Functions, bucketName: string) => {
     const cf = httpsCallable(functions, commonTerms.cloudFunctionsNames.createBucket)
 
-    await cf({ bucketName })
+    console.log({ bucketName, url: (functions as any)._url(commonTerms.cloudFunctionsNames.createBucket) })
+
+    try {
+        await cf({ bucketName })
+    } catch (error) {
+        console.error(error)
+        throw error;
+    }
 }
 
 /**
