@@ -588,6 +588,7 @@ export const verifycontribution = functionsV2.https.onCall(
                 .doc()
                 .get()
 
+
             // Step (1.A.4).
             if (isContributionValid) {
                 // Sleep ~3 seconds to wait for verification transcription.
@@ -780,6 +781,8 @@ export const verifycontribution = functionsV2.https.onCall(
                 // Run.
                 commandId = await runCommandUsingSSM(ssm, vmInstanceId, verificationCommand)
 
+                console.log("0c")
+
                 printLog(`Starting the execution of command ${commandId}`, LogLevel.DEBUG)
 
                 // Step (1.A.3.3).
@@ -800,6 +803,8 @@ export const verifycontribution = functionsV2.https.onCall(
             } else {
                 // CF approach.
                 printLog(`CF mechanism`, LogLevel.DEBUG)
+
+                console.log("-1a")
 
                 const potStoragePath = getPotStorageFilePath(files.potFilename)
                 const firstZkeyStoragePath = getZkeyStorageFilePath(prefix, `${prefix}_${genesisZkeyIndex}.zkey`)
@@ -822,10 +827,13 @@ export const verifycontribution = functionsV2.https.onCall(
                     } (${contributorOrCoordinatorIdentifier})\n`
                 )
 
+                console.log("-1b")
                 // Step (1.A.2).
                 await downloadArtifactFromS3Bucket(bucketName, potStoragePath, potTempFilePath)
                 await downloadArtifactFromS3Bucket(bucketName, firstZkeyStoragePath, firstZkeyTempFilePath)
                 await downloadArtifactFromS3Bucket(bucketName, lastZkeyStoragePath, lastZkeyTempFilePath)
+
+                console.log("-1c")
 
                 // Step (1.A.4).
                 isContributionValid = await zKey.verifyFromInit(
@@ -834,9 +842,13 @@ export const verifycontribution = functionsV2.https.onCall(
                     lastZkeyTempFilePath,
                     transcriptLogger
                 )
+
+                console.log("-1d")
                 
                 // Compute contribution hash.
                 lastZkeyBlake2bHash = await blake512FromPath(lastZkeyTempFilePath)
+
+                console.log("-1e")
 
                 // Free resources by unlinking temporary folders.
                 // Do not free-up verification transcript path here.
@@ -849,6 +861,7 @@ export const verifycontribution = functionsV2.https.onCall(
                 }  
 
                 await completeVerification()
+                console.log("-1f")
             }
         }
     }

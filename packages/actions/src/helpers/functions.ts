@@ -319,6 +319,15 @@ export const verifyContribution = async (
         timeout: 3600000 // max timeout 60 minutes.
     })
 
+    console.log({
+        ceremonyId,
+        circuitId: circuit.id,
+        bucketName,
+        contributorOrCoordinatorIdentifier,
+        verifyContributionCloudFunctionEndpoint,
+    });
+    console.log(5);
+
     /**
      * @dev Force a race condition to fix #57.
      * TL;DR if the cloud function does not return despite having finished its execution, we use
@@ -332,6 +341,9 @@ export const verifyContribution = async (
             circuitId: circuit.id,
             contributorOrCoordinatorIdentifier,
             bucketName
+        }).catch(err => {
+            console.error({ err });
+            throw err;
         }),
         new Promise((resolve): any => {
             setTimeout(() => {

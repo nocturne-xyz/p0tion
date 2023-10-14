@@ -153,8 +153,10 @@ export const verifyCeremony = async (
     logger?: any
 ): Promise<void> => {
     // 1. download all ceremony artifacts
-    console.log(1);
-    const ceremonyArtifacts = await downloadAllCeremonyArtifacts(functions, firestore, ceremonyPrefix, outputDirectory)
+    const ceremonyArtifacts = await downloadAllCeremonyArtifacts(functions, firestore, ceremonyPrefix, outputDirectory).catch(err => {
+        console.error({ err });
+        throw err
+    });
     // if there are no ceremony artifacts, we throw an error
     if (ceremonyArtifacts.length === 0)
         throw new Error(
@@ -166,7 +168,6 @@ export const verifyCeremony = async (
         throw new Error("The circuit inputs file does not exist. Please check the path and try again.")
     const circuitsInputs = JSON.parse(fs.readFileSync(circuitInputsPath).toString())
 
-    console.log(2);
     // find the ceremony given the prefix
     const ceremonyQuery = await queryCollection(firestore, commonTerms.collections.ceremonies.name, [
         where(commonTerms.collections.ceremonies.fields.prefix, "==", ceremonyPrefix)
@@ -174,7 +175,6 @@ export const verifyCeremony = async (
 
     // get the ceremony data - no need to do an existence check as
     // we already checked that the ceremony exists in downloafAllCeremonyArtifacts
-    console.log(3);
     const ceremonyData = fromQueryToFirebaseDocumentInfo(ceremonyQuery.docs)
     const ceremony = ceremonyData.at(0)
     // this is required to re-generate the final zKey
@@ -187,7 +187,6 @@ export const verifyCeremony = async (
         const inputIndex = ceremonyArtifacts.indexOf(ceremonyArtifact)
 
         // 2. verify the final zKey
-        console.log("4a");
         const isValid = await verifyZKey(
             ceremonyArtifact.r1csLocalFilePath,
             ceremonyArtifact.finalZkeyLocalFilePath,
@@ -201,7 +200,6 @@ export const verifyCeremony = async (
             )
 
         // 3. get the final contribution beacon
-        console.log("4b");
         const contributionBeacon = await getFinalContributionBeacon(
             firestore,
             ceremonyId,
@@ -210,7 +208,6 @@ export const verifyCeremony = async (
         )
         const generatedFinalZkeyPath = `${ceremonyArtifact.directoryRoot}/${ceremonyArtifact.circuitPrefix}_${finalContributionIndex}_verification.zkey`
         // 4. re generate the zkey using the beacon and check hashes
-        console.log("4c");
         await generateZkeyFromScratch(
             true,
             ceremonyArtifact.r1csLocalFilePath,
@@ -221,7 +218,6 @@ export const verifyCeremony = async (
             coordinatorId,
             contributionBeacon
         )
-        console.log("4d");
         const zKeysMatching = await compareHashes(generatedFinalZkeyPath, ceremonyArtifact.finalZkeyLocalFilePath)
         if (!zKeysMatching)
             throw new Error(
@@ -231,7 +227,6 @@ export const verifyCeremony = async (
         // 5. extract the verifier and the vKey
         const verifierLocalPath = `${ceremonyArtifact.directoryRoot}/${ceremonyArtifact.circuitPrefix}_${verifierSmartContractAcronym}_verification.sol`
         const vKeyLocalPath = `${ceremonyArtifact.directoryRoot}/${ceremonyArtifact.circuitPrefix}_${verificationKeyAcronym}_verification.json`
-        console.log("4e");
         await exportVerifierAndVKey(
             ceremonyArtifact.finalZkeyLocalFilePath,
             verifierLocalPath,
@@ -240,20 +235,17 @@ export const verifyCeremony = async (
         )
 
         // 6. verify that the generated verifier and vkey match the ones downloaded from S3
-        console.log("4f");
         const verifierMatching = await compareHashes(verifierLocalPath, ceremonyArtifact.verifierLocalFilePath)
         if (!verifierMatching)
             throw new Error(
                 `The verifier contract for the Contract ${ceremonyArtifact.circuitPrefix} does not match the one downloaded from S3. Please confirm manually by downloading from the S3 bucket.`
             )
-        console.log("4g");
         const vKeyMatching = await compareHashes(vKeyLocalPath, ceremonyArtifact.verificationKeyLocalFilePath)
         if (!vKeyMatching)
             throw new Error(
                 `The verification key for the Contract ${ceremonyArtifact.circuitPrefix} does not match the one downloaded from S3. Please confirm manually by downloading from the S3 bucket.`
             )
 
-        console.log("4h");
         // 7. generate a proof and verify it locally (use either of the downloaded or generated as the hashes will have matched at this point)
         const { proof, publicSignals } = await generateGROTH16Proof(
             circuitsInputs[inputIndex],
@@ -262,7 +254,6 @@ export const verifyCeremony = async (
             logger
         )
 
-        console.log("4i")
         const isProofValid = await verifyGROTH16Proof(vKeyLocalPath, publicSignals, proof)
         if (!isProofValid)
             throw new Error(
@@ -270,11 +261,8 @@ export const verifyCeremony = async (
             )
 
         // 8. deploy Verifier contract and verify the proof on-chain
-        console.log("4j");
         const verifierContract = await deployVerifierContract(verifierLocalPath, signer)
-        console.log("4k");
         const formattedProof = await formatSolidityCalldata(publicSignals, proof)
-        console.log("4l");
         const isProofValidOnChain = await verifyGROTH16ProofOnChain(verifierContract, formattedProof)
         if (!isProofValidOnChain)
             throw new Error(

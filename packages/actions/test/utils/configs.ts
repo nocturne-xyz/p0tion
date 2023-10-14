@@ -69,8 +69,6 @@ export const initializeUserServices = (): {
     const userFunctions = envType === TestingEnvironment.PRODUCTION ? getFunctions(userApp) : getFunctions(getApp(), "us-central1")
 
 
-    console.log({ userFunctions });
-
     if (envType === TestingEnvironment.DEVELOPMENT) {
         // Connect the emulator for dev environment (default endpoints).
         connectAuthEmulator(auth, "http://localhost:9099")

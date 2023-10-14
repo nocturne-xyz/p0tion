@@ -183,15 +183,12 @@ describe("Smart Contract", () => {
             // * create participant
             // * create contribution
             before(async () => {
-                console.log("a")
                 ;[signer] = await ethers.getSigners()
 
                 for (let i = 0; i < users.length; i++) {
-                    console.log("b")
                     users[i].uid = await createMockUser(userApp, users[i].data.email, passwords[i], true, adminAuth)
                 }
                 await sleep(1000)
-                console.log("c")
                 await signInWithEmailAndPassword(userAuth, users[0].data.email, passwords[0])
 
                 // add coordinator final contribution
@@ -232,18 +229,15 @@ describe("Smart Contract", () => {
 
                 // update this here so it can be used to generate the final zKey
                 ceremony.data.coordinatorId = coordinatorIdentifier
-                console.log("d")
                 // create a mock ceremony
                 await createMockCeremony(adminFirestore, ceremony, circuit)
-                console.log("e")
                 // add the participant and contribution
                 await createMockParticipant(adminFirestore, ceremony.uid, users[0].uid, coordinatorParticipant)
-                console.log("f")
                 await createMockContribution(adminFirestore, ceremony.uid, circuit.uid, finalContribution, users[0].uid)
-                console.log("g")
                 // create a bucket
+                console.log("creating bucket...");
                 await createS3Bucket(userFunctions, bucketName)
-                console.log("h")
+                console.log("bucket created");
                 await sleep(1000)
                 // upload all files to S3
                 await uploadFileToS3(bucketName, r1csStorageFilePath, r1csPath)
@@ -253,7 +247,6 @@ describe("Smart Contract", () => {
                 await uploadFileToS3(bucketName, verifierStorageFilePath, verifierPath)
                 await uploadFileToS3(bucketName, verificationKeyStoragePath, verificationKeyPath)
                 await uploadFileToS3(bucketName, wasmStorageFilePath, wasmPath)
-                console.log("i");
                 await sleep(1000)
             })
 
