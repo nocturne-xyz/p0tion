@@ -7,6 +7,7 @@ import { pipeline } from "node:stream"
 import { promisify } from "node:util"
 import fetch from "node-fetch"
 import { Functions } from "firebase/functions"
+import retry from "async-retry";
 import {
     CeremonyTimeoutType,
     CircomCompilerData,
@@ -36,7 +37,7 @@ import {
     setupCeremony,
     parseCeremonyFile,
     CircuitContributionVerificationMechanism
-} from "@p0tion/actions"
+} from "@nocturne-xyz/p0tion-actions"
 import { customSpinner, simpleLoader, sleep, terminate } from "../lib/utils.js"
 import {
     promptCeremonyInputData,
@@ -446,7 +447,7 @@ export const handleCircuitArtifactUploadToStorage = async (
 ) => {
     const spinner = customSpinner(`Uploading ${theme.text.bold(completeFilename)} file to ceremony storage...`, `clock`)
     spinner.start()
-
+ 
     await multiPartUpload(
         firebaseFunctions,
         bucketName,

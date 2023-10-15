@@ -1,4 +1,4 @@
-import { commonTerms } from "@p0tion/actions"
+import { commonTerms } from "@nocturne-xyz/p0tion-actions"
 import Conf from "conf"
 import { dirname } from "path"
 import { readFileSync } from "fs"
@@ -16,7 +16,7 @@ const { name } = JSON.parse(
 /**
  * Local Storage.
  * @dev The CLI implementation use the Conf package to create a local storage
- * in the user device (`.config/@p0tion/phase2cli-nodejs/config.json` path) to store the access token.
+ * in the user device (`.config/@nocturne-xyz/p0tion-phase2cli-nodejs/config.json` path) to store the access token.
  */
 const config = new Conf({
     projectName: name,

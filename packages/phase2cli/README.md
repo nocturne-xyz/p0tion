@@ -12,11 +12,11 @@
     <a href="https://github.com/privacy-scaling-explorations/p0tion/blob/main/LICENSE">
         <img alt="Github License" src="https://img.shields.io/github/license/privacy-scaling-explorations/p0tion.svg?style=flat-square">
     </a>
-    <a href="https://www.npmjs.com/package/@p0tion/phase2cli">
-        <img alt="NPM Version" src="https://img.shields.io/npm/v/@p0tion/phase2cli?style=flat-square" />
+    <a href="https://www.npmjs.com/package/@nocturne-xyz/p0tion-phase2cli">
+        <img alt="NPM Version" src="https://img.shields.io/npm/v/@nocturne-xyz/p0tion-phase2cli?style=flat-square" />
     </a>
-    <a href="https://npmjs.org/package/@p0tion/phase2cli">
-        <img alt="Downloads" src="https://img.shields.io/npm/dm/@p0tion/phase2cli.svg?style=flat-square" />
+    <a href="https://npmjs.org/package/@nocturne-xyz/p0tion-phase2cli">
+        <img alt="Downloads" src="https://img.shields.io/npm/dm/@nocturne-xyz/p0tion-phase2cli.svg?style=flat-square" />
     </a>
     <a href="https://eslint.org/">
         <img alt="Linter" src="https://img.shields.io/badge/linter-eslint-8080f2?style=flat-square&logo=eslint" />
@@ -49,16 +49,16 @@ Rounding up the option of using a unique tool for different ceremony stages make
 
 ## 🛠 Installation
 
-Install the `@p0tion/phase2cli` package globally
+Install the `@nocturne-xyz/p0tion-phase2cli` package globally
 
 ```bash
-npm i -g @p0tion/phase2cli
+npm i -g @nocturne-xyz/p0tion-phase2cli
 ```
 
 or run specific commands with `npx`:
 
 ```bash
-npx @p0tion/phase2cli contribute
+npx @nocturne-xyz/p0tion-phase2cli contribute
 ```
 
 > Please note that phase2cli only runs on Linux or Mac systems. If a Windows user, please install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) first.

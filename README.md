@@ -75,57 +75,57 @@ Our design philosophy ensures that p0tion stands as the optimal choice for runni
        <tr>
             <td>
                 <a href="/packages/actions">
-                    @p0tion/actions
+                    @nocturne-xyz/p0tion-actions
                 </a>
             </td>
             <td>
                 <!-- NPM version -->
-                <a href="https://npmjs.org/package/@p0tion/actions">
-                    <img src="https://img.shields.io/npm/v/@p0tion/actions.svg?style=flat-square" alt="NPM version" />
+                <a href="https://npmjs.org/package/@nocturne-xyz/p0tion-actions">
+                    <img src="https://img.shields.io/npm/v/@nocturne-xyz/p0tion-actions.svg?style=flat-square" alt="NPM version" />
                 </a>
             </td>
             <td>
                 <!-- Downloads -->
-                <a href="https://npmjs.org/package/@p0tion/actions">
-                    <img src="https://img.shields.io/npm/dm/@p0tion/actions.svg?style=flat-square" alt="Downloads" />
+                <a href="https://npmjs.org/package/@nocturne-xyz/p0tion-actions">
+                    <img src="https://img.shields.io/npm/dm/@nocturne-xyz/p0tion-actions.svg?style=flat-square" alt="Downloads" />
                 </a>
             </td>
         </tr>
        <tr>
             <td>
                 <a href="/packages/backend">
-                    @p0tion/backend
+                    @nocturne-xyz/p0tion-backend
                 </a>
             </td>
             <td>
                 <!-- NPM version -->
-                <a href="https://npmjs.org/package/@p0tion/backend">
-                    <img src="https://img.shields.io/npm/v/@p0tion/backend.svg?style=flat-square" alt="NPM version" />
+                <a href="https://npmjs.org/package/@nocturne-xyz/p0tion-backend">
+                    <img src="https://img.shields.io/npm/v/@nocturne-xyz/p0tion-backend.svg?style=flat-square" alt="NPM version" />
                 </a>
             </td>
             <td>
                 <!-- Downloads -->
-                <a href="https://npmjs.org/package/@p0tion/backend">
-                    <img src="https://img.shields.io/npm/dm/@p0tion/backend.svg?style=flat-square" alt="Downloads" />
+                <a href="https://npmjs.org/package/@nocturne-xyz/p0tion-backend">
+                    <img src="https://img.shields.io/npm/dm/@nocturne-xyz/p0tion-backend.svg?style=flat-square" alt="Downloads" />
                 </a>
             </td>
         </tr>
        <tr>
             <td>
                 <a href="/packages/phase2cli">
-                    @p0tion/phase2cli
+                    @nocturne-xyz/p0tion-phase2cli
                 </a>
             </td>
             <td>
                 <!-- NPM version -->
-                <a href="https://npmjs.org/package/@p0tion/phase2cli">
-                    <img src="https://img.shields.io/npm/v/@p0tion/phase2cli.svg?style=flat-square" alt="NPM version" />
+                <a href="https://npmjs.org/package/@nocturne-xyz/p0tion-phase2cli">
+                    <img src="https://img.shields.io/npm/v/@nocturne-xyz/p0tion-phase2cli.svg?style=flat-square" alt="NPM version" />
                 </a>
             </td>
             <td>
                 <!-- Downloads -->
-                <a href="https://npmjs.org/package/@p0tion/phase2cli">
-                    <img src="https://img.shields.io/npm/dm/@p0tion/phase2cli.svg?style=flat-square" alt="Downloads" />
+                <a href="https://npmjs.org/package/@nocturne-xyz/p0tion-phase2cli">
+                    <img src="https://img.shields.io/npm/dm/@nocturne-xyz/p0tion-phase2cli.svg?style=flat-square" alt="Downloads" />
                 </a>
             </td>
         </tr>

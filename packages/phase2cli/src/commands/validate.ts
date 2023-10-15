@@ -1,4 +1,4 @@
-import { parseCeremonyFile } from "@p0tion/actions"
+import { parseCeremonyFile } from "@nocturne-xyz/p0tion-actions"
 import { showError } from "../lib/errors.js"
 
 /**

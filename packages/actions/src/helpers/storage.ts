@@ -112,10 +112,12 @@ export const uploadParts = async (
         })
 
         // Verify the response.
-        if (response.status !== 200 || !response.ok)
+        if (response.status !== 200 || !response.ok) {
+            console.error({ response })
             throw new Error(
                 `Unable to upload chunk number ${i}. Please, terminate the current session and retry to resume from the latest uploaded chunk.`
             )
+        }
 
         // Extract uploaded chunk data.
         const chunk = {

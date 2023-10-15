@@ -57,6 +57,6 @@ Once the tag is pushed, GitHub Actions will automatically publish the packages t
 
 [1]: The following packages will be published on npm.js:
 
--   @p0tion/actions
--   @p0tion/backend
--   @p0tion/phase2cli
+-   @nocturne-xyz/p0tion-actions
+-   @nocturne-xyz/p0tion-backend
+-   @nocturne-xyz/p0tion-phase2cli

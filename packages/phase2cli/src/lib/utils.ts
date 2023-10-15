@@ -19,7 +19,7 @@ import {
     permanentlyStoreCurrentContributionTimeAndHash,
     progressToNextContributionStep,
     verifyContribution
-} from "@p0tion/actions"
+} from "@nocturne-xyz/p0tion-actions"
 import { Presets, SingleBar } from "cli-progress"
 import dotenv from "dotenv"
 import { GithubAuthProvider, OAuthCredential } from "firebase/auth"

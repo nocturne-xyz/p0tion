@@ -25,7 +25,7 @@ import {
     CeremonyState,
     finalContributionIndex,
     CircuitDocument
-} from "@p0tion/actions"
+} from "@nocturne-xyz/p0tion-actions"
 import fetch from "@adobe/node-fetch-retry"
 import path from "path"
 import os from "os"

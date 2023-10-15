@@ -1,4 +1,4 @@
-import { CeremonyInputData, CircuitDocument, ETagWithPartNumber } from "@p0tion/actions"
+import { CeremonyInputData, CircuitDocument, ETagWithPartNumber } from "@nocturne-xyz/p0tion-actions"
 
 /**
  * Group all the necessary data needed for running the `setupCeremony` cloud function.

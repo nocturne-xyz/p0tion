@@ -18,7 +18,7 @@ import {
     vmBootstrapCommand,
     vmDependenciesAndCacheArtifactsCommand,
     vmBootstrapScriptFilename
-} from "@p0tion/actions"
+} from "@nocturne-xyz/p0tion-actions"
 import { encode } from "html-entities"
 import { SetupCeremonyData } from "../types/index"
 import { COMMON_ERRORS, logAndThrowError, printLog, SPECIFIC_ERRORS } from "../lib/errors"

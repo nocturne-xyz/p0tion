@@ -20,8 +20,8 @@
     "scripts": {
         "build": "yarn workspaces foreach -t run build",
         "test": "yarn test:dev",
-        "test:firebase-emulator": "NODE_ENV=dev yarn workspace @p0tion/backend emulator:exec-test",
-        "test:prod": "yarn workspace @p0tion/actions test:contracts && GOOGLE_APPLICATION_CREDENTIALS=\"./packages/backend/serviceAccountKey.json\" && NODE_ENV=prod jest --config=jest.json --detectOpenHandles --forceExit --runInBand",
+        "test:firebase-emulator": "NODE_ENV=dev yarn workspace @nocturne-xyz/p0tion-backend emulator:exec-test",
+        "test:prod": "yarn workspace @nocturne-xyz/p0tion-actions test:contracts && GOOGLE_APPLICATION_CREDENTIALS=\"./packages/backend/serviceAccountKey.json\" && NODE_ENV=prod jest --config=jest.json --detectOpenHandles --forceExit --runInBand",
         "test:ci-prod": "NODE_ENV=prod jest --config=jest.json --detectOpenHandles --forceExit --runInBand",
         "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
         "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
@@ -74,5 +74,8 @@
     },
     "workspaces": [
         "packages/*"
-    ]
+    ],
+    "dependencies": {
+        "lerna": "^7.3.1"
+    }
 }

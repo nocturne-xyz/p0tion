@@ -12,11 +12,11 @@
     <a href="https://github.com/privacy-scaling-explorations/p0tion/blob/main/LICENSE">
         <img alt="Github License" src="https://img.shields.io/github/license/privacy-scaling-explorations/p0tion.svg?style=flat-square">
     </a>
-    <a href="https://www.npmjs.com/package/@p0tion/actions">
-        <img alt="NPM Version" src="https://img.shields.io/npm/v/@p0tion/actions?style=flat-square" />
+    <a href="https://www.npmjs.com/package/@nocturne-xyz/p0tion-actions">
+        <img alt="NPM Version" src="https://img.shields.io/npm/v/@nocturne-xyz/p0tion-actions?style=flat-square" />
     </a>
-    <a href="https://npmjs.org/package/@p0tion/actions">
-        <img alt="Downloads" src="https://img.shields.io/npm/dm/@p0tion/actions.svg?style=flat-square" />
+    <a href="https://npmjs.org/package/@nocturne-xyz/p0tion-actions">
+        <img alt="Downloads" src="https://img.shields.io/npm/dm/@nocturne-xyz/p0tion-actions.svg?style=flat-square" />
     </a>
     <a href="https://eslint.org/">
         <img alt="Linter" src="https://img.shields.io/badge/linter-eslint-8080f2?style=flat-square&logo=eslint" />
@@ -51,16 +51,16 @@ To integrate these features, you only need to install the package and import met
 
 ### NPM or Yarn
 
-Install the `@p0tion/actions` package with npm
+Install the `@nocturne-xyz/p0tion-actions` package with npm
 
 ```bash
-npm i @p0tion/actions
+npm i @nocturne-xyz/p0tion-actions
 ```
 
 or yarn
 
 ```bash
-yarn add @p0tion/actions
+yarn add @nocturne-xyz/p0tion-actions
 ```
 
 ## 📜 Usage

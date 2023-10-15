@@ -8,7 +8,7 @@ import {
     ParticipantContributionStep,
     getParticipantsCollectionPath,
     commonTerms
-} from "@p0tion/actions"
+} from "@nocturne-xyz/p0tion-actions"
 import { FieldValue } from "firebase-admin/firestore"
 import {
     PermanentlyStoreCurrentContributionTimeAndHash,

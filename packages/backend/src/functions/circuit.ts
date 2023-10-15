@@ -37,7 +37,7 @@ import {
     createCustomLoggerForFile,
     retrieveCommandStatus,
     stopEC2Instance
-} from "@p0tion/actions"
+} from "@nocturne-xyz/p0tion-actions"
 import { zKey } from "snarkjs"
 import { CommandInvocationStatus, SSMClient } from "@aws-sdk/client-ssm"
 import { FinalizeCircuitData, VerifyContributionData } from "../types/index"

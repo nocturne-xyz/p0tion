@@ -6,7 +6,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [1.0.5](https://github.com/privacy-scaling-explorations/p0tion/compare/v1.0.4...v1.0.5) (2023-07-24)
 
-**Note:** Version bump only for package @p0tion/actions
+**Note:** Version bump only for package @nocturne-xyz/p0tion-actions
 
 
 

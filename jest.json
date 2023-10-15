@@ -1,7 +1,7 @@
 {
     "testPathIgnorePatterns": [".d.ts", ".js", "packages/actions/test/unit/contract.test.ts"],
     "moduleNameMapper": {
-        "@p0tion/(.*)$": "<rootDir>/packages/$1"
+        "@nocturne-xyz/p0tion-(.*)$": "<rootDir>/packages/$1"
     },
     "modulePaths": ["<rootDir>"],
     "testTimeout": 100000000,

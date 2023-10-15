@@ -9,7 +9,7 @@ import {
     ParticipantStatus,
     getTimeoutsCollectionPath,
     commonTerms
-} from "@p0tion/actions"
+} from "@nocturne-xyz/p0tion-actions"
 import {
     getCeremonyCircuits,
     getCurrentServerTimestampInMillis,

@@ -12,11 +12,11 @@
     <a href="https://github.com/privacy-scaling-explorations/p0tion/blob/main/LICENSE">
         <img alt="Github License" src="https://img.shields.io/github/license/privacy-scaling-explorations/p0tion.svg?style=flat-square">
     </a>
-    <a href="https://www.npmjs.com/package/@p0tion/backend">
-        <img alt="NPM Version" src="https://img.shields.io/npm/v/@p0tion/backend?style=flat-square" />
+    <a href="https://www.npmjs.com/package/@nocturne-xyz/p0tion-backend">
+        <img alt="NPM Version" src="https://img.shields.io/npm/v/@nocturne-xyz/p0tion-backend?style=flat-square" />
     </a>
-    <a href="https://npmjs.org/package/@p0tion/backend">
-        <img alt="Downloads" src="https://img.shields.io/npm/dm/@p0tion/backend.svg?style=flat-square" />
+    <a href="https://npmjs.org/package/@nocturne-xyz/p0tion-backend">
+        <img alt="Downloads" src="https://img.shields.io/npm/dm/@nocturne-xyz/p0tion-backend.svg?style=flat-square" />
     </a>
     <a href="https://eslint.org/">
         <img alt="Linter" src="https://img.shields.io/badge/linter-eslint-8080f2?style=flat-square&logo=eslint" />
