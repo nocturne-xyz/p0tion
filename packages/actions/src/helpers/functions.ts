@@ -326,7 +326,6 @@ export const verifyContribution = async (
         contributorOrCoordinatorIdentifier,
         verifyContributionCloudFunctionEndpoint,
     });
-    console.log(5);
 
     /**
      * @dev Force a race condition to fix #57.
