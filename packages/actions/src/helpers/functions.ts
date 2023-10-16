@@ -84,7 +84,7 @@ export const createS3Bucket = async (functions: Functions, bucketName: string) =
         await cf({ bucketName })
     } catch (error) {
         console.error(error)
-        throw error;
+        throw error
     }
 }
 
@@ -324,8 +324,8 @@ export const verifyContribution = async (
         circuitId: circuit.id,
         bucketName,
         contributorOrCoordinatorIdentifier,
-        verifyContributionCloudFunctionEndpoint,
-    });
+        verifyContributionCloudFunctionEndpoint
+    })
 
     /**
      * @dev Force a race condition to fix #57.
@@ -340,9 +340,9 @@ export const verifyContribution = async (
             circuitId: circuit.id,
             contributorOrCoordinatorIdentifier,
             bucketName
-        }).catch(err => {
-            console.error({ err });
-            throw err;
+        }).catch((err) => {
+            console.error({ err })
+            throw err
         }),
         new Promise((resolve): any => {
             setTimeout(() => {

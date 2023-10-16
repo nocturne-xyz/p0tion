@@ -235,12 +235,11 @@ export const downloadCeremonyArtifact = async (
     const response = await fetch(getPreSignedUrl)
 
     if (response.status !== 200 && !response.ok) {
-        console.error({ response });
+        console.error({ response })
         throw new Error(
             `There was an error while downloading the object ${storagePath} from the bucket ${bucketName}. Please check the function inputs and try again.`
         )
     }
-
 
     const content: any = response.body
     // Prepare stream.

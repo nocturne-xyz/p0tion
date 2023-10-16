@@ -606,7 +606,7 @@ describe("Contribute", () => {
         describe("verifyContribution", () => {
             const bucketName = "test-bucket"
             beforeAll(async () => {
-                console.log(1);
+                console.log(1)
                 await createMockCeremony(
                     adminFirestore,
                     fakeCeremoniesData.fakeCeremonyContributeTest,
@@ -614,17 +614,17 @@ describe("Contribute", () => {
                 )
             })
             it("should revert when the user is not authenticated", async () => {
-                console.log(2);
+                console.log(2)
                 const circuitDocument = await getDocumentById(
                     userFirestore,
                     getCircuitsCollectionPath(fakeCeremoniesData.fakeCeremonyContributeTest.uid),
                     fakeCircuitsData.fakeCircuitSmallContributors.uid
                 )
 
-                console.log(3);
+                console.log(3)
                 await signOut(userAuth)
 
-                console.log(4);
+                console.log(4)
                 await expect(
                     verifyContribution(
                         userFunctions,

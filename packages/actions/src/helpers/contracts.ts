@@ -153,10 +153,15 @@ export const verifyCeremony = async (
     logger?: any
 ): Promise<void> => {
     // 1. download all ceremony artifacts
-    const ceremonyArtifacts = await downloadAllCeremonyArtifacts(functions, firestore, ceremonyPrefix, outputDirectory).catch(err => {
-        console.error({ err });
+    const ceremonyArtifacts = await downloadAllCeremonyArtifacts(
+        functions,
+        firestore,
+        ceremonyPrefix,
+        outputDirectory
+    ).catch((err) => {
+        console.error({ err })
         throw err
-    });
+    })
     // if there are no ceremony artifacts, we throw an error
     if (ceremonyArtifacts.length === 0)
         throw new Error(

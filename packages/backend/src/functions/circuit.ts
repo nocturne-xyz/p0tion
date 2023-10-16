@@ -42,7 +42,15 @@ import { zKey } from "snarkjs"
 import { CommandInvocationStatus, SSMClient } from "@aws-sdk/client-ssm"
 import { FinalizeCircuitData, VerifyContributionData } from "../types/index"
 import { LogLevel } from "../types/enums"
-import { COMMON_ERRORS, logAndThrowError, makeError, printLog, SPECIFIC_ERRORS } from "../lib/errors"
+import {
+    COMMON_ERRORS,
+    logAndMakeError,
+    logAndThrowError,
+    logError,
+    makeError,
+    printLog,
+    SPECIFIC_ERRORS
+} from "../lib/errors"
 import {
     createEC2Client,
     createSSMClient,
@@ -58,6 +66,7 @@ import {
     uploadFileToBucket
 } from "../lib/utils"
 import { EC2Client } from "@aws-sdk/client-ec2"
+import { HttpsError } from "firebase-functions/v2/https"
 
 dotenv.config()
 
@@ -221,50 +230,66 @@ const coordinate = async (
  * @param {string} commandId the unique identifier of the VM command.
  * @returns <Promise<void>> true when the command execution succeed; otherwise false.
  */
-const waitForVMCommandExecution = (
-    resolve: any,
-    reject: any,
-    ssm: SSMClient,
-    vmInstanceId: string,
-    commandId: string
-) => {
-    const interval = setInterval(async () => {
-        try {
-            // Get command status.
-            const cmdStatus = await retrieveCommandStatus(ssm, vmInstanceId, commandId)
-            printLog(`Checking command ${commandId} status => ${cmdStatus}`, LogLevel.DEBUG)
+const waitForVMCommandExecution = (ssm: SSMClient, vmInstanceId: string, commandId: string): Promise<void> =>
+    new Promise((resolve, reject) => {
+        const poll = async () => {
+            try {
+                // Get command status.
+                const cmdStatus = await retrieveCommandStatus(ssm, vmInstanceId, commandId)
+                printLog(`Checking command ${commandId} status => ${cmdStatus}`, LogLevel.DEBUG)
 
-            if (cmdStatus === CommandInvocationStatus.SUCCESS) {
-                printLog(`Command ${commandId} successfully completed`, LogLevel.DEBUG)
+                let error: HttpsError | undefined
+                switch (cmdStatus) {
+                    case CommandInvocationStatus.CANCELLING:
+                    case CommandInvocationStatus.CANCELLED: {
+                        error = SPECIFIC_ERRORS.SE_VM_CANCELLED_COMMAND_EXECUTION
+                        break
+                    }
+                    case CommandInvocationStatus.DELAYED: {
+                        error = SPECIFIC_ERRORS.SE_VM_DELAYED_COMMAND_EXECUTION
+                        break
+                    }
+                    case CommandInvocationStatus.FAILED: {
+                        error = SPECIFIC_ERRORS.SE_VM_FAILED_COMMAND_EXECUTION
+                        break
+                    }
+                    case CommandInvocationStatus.TIMED_OUT: {
+                        error = SPECIFIC_ERRORS.SE_VM_TIMEDOUT_COMMAND_EXECUTION
+                        break
+                    }
+                    case CommandInvocationStatus.IN_PROGRESS:
+                    case CommandInvocationStatus.PENDING: {
+                        // wait a minute and poll again
+                        setTimeout(poll, 60000)
+                        return
+                    }
+                    case CommandInvocationStatus.SUCCESS: {
+                        printLog(`Command ${commandId} successfully completed`, LogLevel.DEBUG)
 
-                // Resolve the promise.
-                resolve()
-            } else if (cmdStatus === CommandInvocationStatus.FAILED) {
-                logAndThrowError(SPECIFIC_ERRORS.SE_VM_FAILED_COMMAND_EXECUTION)
-                reject()
-            } else if (cmdStatus === CommandInvocationStatus.TIMED_OUT) {
-                logAndThrowError(SPECIFIC_ERRORS.SE_VM_TIMEDOUT_COMMAND_EXECUTION)
-                reject()
-            } else if (cmdStatus === CommandInvocationStatus.CANCELLED) {
-                logAndThrowError(SPECIFIC_ERRORS.SE_VM_CANCELLED_COMMAND_EXECUTION)
-                reject()
-            } else if (cmdStatus === CommandInvocationStatus.DELAYED) {
-                logAndThrowError(SPECIFIC_ERRORS.SE_VM_DELAYED_COMMAND_EXECUTION)
+                        // Resolve the promise.
+                        resolve()
+                        return
+                    }
+                    default: {
+                        logAndThrowError(SPECIFIC_ERRORS.SE_VM_UNKNOWN_COMMAND_STATUS)
+                    }
+                }
+
+                if (error) {
+                    logAndThrowError(error)
+                }
+            } catch (error: any) {
+                printLog(`Invalid command ${commandId} execution`, LogLevel.DEBUG)
+
+                if (!error.toString().includes(commandId)) logAndThrowError(COMMON_ERRORS.CM_INVALID_COMMAND_EXECUTION)
+
+                // Reject the promise.
                 reject()
             }
-        } catch (error: any) {
-            printLog(`Invalid command ${commandId} execution`, LogLevel.DEBUG)
-
-            if (!error.toString().includes(commandId)) logAndThrowError(COMMON_ERRORS.CM_INVALID_COMMAND_EXECUTION)
-
-            // Reject the promise.
-            reject()
-        } finally {
-            // Clear the interval.
-            clearInterval(interval)
         }
-    }, 60000) // 1 minute.
-}
+
+        poll()
+    })
 
 /**
  * This method is used to coordinate the waiting queues of ceremony circuits.
@@ -286,7 +311,7 @@ const waitForVMCommandExecution = (
  * - Just completed a contribution or all contributions for each circuit. If yes, coordinate (multi-participant scenario).
  */
 export const coordinateCeremonyParticipant = functionsV1
-    .region('us-central1')
+    .region("us-central1")
     .runWith({
         memory: "512MB"
     })
@@ -387,7 +412,6 @@ export const coordinateCeremonyParticipant = functionsV1
         }
     })
 
-
 /**
  * Recursive function to check whether an EC2 is in a running state
  * @notice required step to run commands
@@ -396,16 +420,12 @@ export const coordinateCeremonyParticipant = functionsV1
  * @param attempts <number> - how many times to retry before failing
  * @returns <Promise<boolean>> - whether the VM was started
  */
-const checkIfVMRunning = async (
-    ec2: EC2Client, 
-    vmInstanceId: string, 
-    attempts = 5
-    ): Promise<boolean> => {
+const checkIfVMRunning = async (ec2: EC2Client, vmInstanceId: string, attempts = 5): Promise<boolean> => {
     // if we tried 5 times, then throw an error
     if (attempts <= 0) logAndThrowError(SPECIFIC_ERRORS.SE_VM_NOT_RUNNING)
 
-    await sleep(60000); // Wait for 1 min
-    const isVMRunning = await checkIfRunning(ec2, vmInstanceId) 
+    await sleep(60000) // Wait for 1 min
+    const isVMRunning = await checkIfRunning(ec2, vmInstanceId)
 
     if (!isVMRunning) {
         printLog(`VM not running, ${attempts - 1} attempts remaining. Retrying in 1 minute...`, LogLevel.DEBUG)
@@ -442,7 +462,7 @@ const checkIfVMRunning = async (
  * 2) Send all updates atomically to the Firestore database.
  */
 export const verifycontribution = functionsV2.https.onCall(
-    { memory: "16GiB", timeoutSeconds: 3600, region: 'us-central1', maxInstances: 1 },
+    { memory: "16GiB", timeoutSeconds: 3600, region: "us-central1", maxInstances: 1 },
     async (request: functionsV2.https.CallableRequest<VerifyContributionData>): Promise<any> => {
         if (!request.auth || (!request.auth.token.participant && !request.auth.token.coordinator))
             logAndThrowError(SPECIFIC_ERRORS.SE_AUTH_NO_CURRENT_AUTH_USER)
@@ -588,7 +608,6 @@ export const verifycontribution = functionsV2.https.onCall(
                 .doc()
                 .get()
 
-
             // Step (1.A.4).
             if (isContributionValid) {
                 // Sleep ~3 seconds to wait for verification transcription.
@@ -611,7 +630,6 @@ export const verifycontribution = functionsV2.https.onCall(
                         verificationTranscriptTemporaryLocalPath,
                         true
                     )
-
                 } else {
                     // Upload verification transcript.
                     /// nb. do not use multi-part upload here due to small file size.
@@ -710,7 +728,7 @@ export const verifycontribution = functionsV2.https.onCall(
                         ? (avgVerifyCloudFunctionTime + verifyCloudFunctionTime) / 2
                         : verifyCloudFunctionTime
 
-                // Prepare tx to update circuit average contribution/verification time.    
+                // Prepare tx to update circuit average contribution/verification time.
                 const updatedCircuitDoc = await getDocumentById(getCircuitsCollectionPath(ceremonyId), circuitId)
                 const { waitingQueue: updatedWaitingQueue } = updatedCircuitDoc.data()!
                 /// @dev this must happen only for valid contributions.
@@ -844,7 +862,7 @@ export const verifycontribution = functionsV2.https.onCall(
                 )
 
                 console.log("-1d")
-                
+
                 // Compute contribution hash.
                 lastZkeyBlake2bHash = await blake512FromPath(lastZkeyTempFilePath)
 
@@ -858,7 +876,7 @@ export const verifycontribution = functionsV2.https.onCall(
                     fs.unlinkSync(lastZkeyTempFilePath)
                 } catch (error: any) {
                     printLog(`Error while unlinking temporary files - Error ${error}`, LogLevel.WARN)
-                }  
+                }
 
                 await completeVerification()
                 console.log("-1f")
@@ -873,7 +891,7 @@ export const verifycontribution = functionsV2.https.onCall(
  * this does not happen if the participant is actually the coordinator who is finalizing the ceremony.
  */
 export const refreshParticipantAfterContributionVerification = functionsV1
-    .region('us-central1')
+    .region("us-central1")
     .runWith({
         memory: "512MB"
     })
@@ -956,7 +974,7 @@ export const refreshParticipantAfterContributionVerification = functionsV1
  * and verification key extracted from the circuit final contribution (as part of the ceremony finalization process).
  */
 export const finalizeCircuit = functionsV1
-    .region('us-central1')
+    .region("us-central1")
     .runWith({
         memory: "512MB"
     })

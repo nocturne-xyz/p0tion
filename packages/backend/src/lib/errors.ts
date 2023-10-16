@@ -43,11 +43,19 @@ export const printLog = (message: string, logLevel: LogLevel) => {
 }
 
 /**
+ * Log and return an HTTPs error.
+ * @param error <HttpsError> - the error to be logged and thrown.
+ */
+export const logError = (error: HttpsError) => {
+    printLog(`${error.code}: ${error.message} ${!error.details ? "" : `\ndetails: ${error.details}`}`, LogLevel.ERROR)
+}
+
+/**
  * Log and throw an HTTPs error.
  * @param error <HttpsError> - the error to be logged and thrown.
  */
 export const logAndThrowError = (error: HttpsError) => {
-    printLog(`${error.code}: ${error.message} ${!error.details ? "" : `\ndetails: ${error.details}`}`, LogLevel.ERROR)
+    logError(error)
     throw error
 }
 
@@ -183,6 +191,11 @@ export const SPECIFIC_ERRORS = {
     SE_VM_DELAYED_COMMAND_EXECUTION: makeError(
         "unavailable",
         "VM command execution has been delayed since there were no available instance at the moment",
+        "Please, contact the coordinator if this error persists."
+    ),
+    SE_VM_UNKNOWN_COMMAND_STATUS: makeError(
+        "unavailable",
+        "VM command execution has failed due to an unknown status code",
         "Please, contact the coordinator if this error persists."
     )
 }

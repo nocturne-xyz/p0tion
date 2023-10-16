@@ -235,9 +235,9 @@ describe("Smart Contract", () => {
                 await createMockParticipant(adminFirestore, ceremony.uid, users[0].uid, coordinatorParticipant)
                 await createMockContribution(adminFirestore, ceremony.uid, circuit.uid, finalContribution, users[0].uid)
                 // create a bucket
-                console.log("creating bucket...");
+                console.log("creating bucket...")
                 await createS3Bucket(userFunctions, bucketName)
-                console.log("bucket created");
+                console.log("bucket created")
                 await sleep(1000)
                 // upload all files to S3
                 await uploadFileToS3(bucketName, r1csStorageFilePath, r1csPath)
