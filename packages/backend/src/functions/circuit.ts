@@ -44,10 +44,7 @@ import { FinalizeCircuitData, VerifyContributionData } from "../types/index"
 import { LogLevel } from "../types/enums"
 import {
     COMMON_ERRORS,
-    logAndMakeError,
     logAndThrowError,
-    logError,
-    makeError,
     printLog,
     SPECIFIC_ERRORS
 } from "../lib/errors"
@@ -804,9 +801,7 @@ export const verifycontribution = functionsV2.https.onCall(
                 printLog(`Starting the execution of command ${commandId}`, LogLevel.DEBUG)
 
                 // Step (1.A.3.3).
-                return new Promise<void>((resolve, reject) =>
-                    waitForVMCommandExecution(resolve, reject, ssm, vmInstanceId, commandId)
-                )
+                waitForVMCommandExecution(ssm, vmInstanceId, commandId)
                     .then(async () => {
                         // Command execution successfully completed.
                         printLog(`Command ${commandId} execution has been successfully completed`, LogLevel.DEBUG)
