@@ -1,5 +1,5 @@
 {
-    "name": "@nocturnexyz/p0tion-phase2cli",
+    "name": "@nocturne-xyz/nocturne-setup",
     "type": "module",
     "version": "0.1.0",
     "description": "All-in-one interactive command-line for interfacing with zkSNARK Phase 2 Trusted Setup ceremonies",
@@ -65,7 +65,7 @@
     "dependencies": {
         "@adobe/node-fetch-retry": "^2.2.0",
         "@aws-sdk/client-s3": "^3.329.0",
-        "@nocturne-xyz/p0tion-actions": "latest",
+        "@nocturne-xyz/p0tion-actions": "0.1.0",
         "@octokit/auth-oauth-app": "^5.0.5",
         "@octokit/auth-oauth-device": "^4.0.4",
         "@octokit/request": "^6.2.3",
