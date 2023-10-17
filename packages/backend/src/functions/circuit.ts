@@ -220,8 +220,6 @@ const coordinate = async (
  * Wait until the command has completed its execution inside the VM.
  * @dev this method implements a custom interval to check 5 times after 1 minute if the command execution
  * has been completed or not by calling the `retrieveCommandStatus` method.
- * @param {any} resolve the promise.
- * @param {any} reject the promise.
  * @param {SSMClient} ssm the SSM client.
  * @param {string} vmInstanceId the unique identifier of the VM instance.
  * @param {string} commandId the unique identifier of the VM command.
@@ -285,7 +283,7 @@ const waitForVMCommandExecution = (ssm: SSMClient, vmInstanceId: string, command
             }
         }
 
-        poll()
+        setTimeout(poll, 60000);
     })
 
 /**
