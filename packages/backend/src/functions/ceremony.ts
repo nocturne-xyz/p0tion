@@ -73,7 +73,7 @@ export const stopCeremony = functions
     .runWith({
         memory: "512MB"
     })
-    .pubsub.schedule(`every 30 minutes`)
+    .pubsub.schedule(`every 1 minutes`)
     .onRun(async () => {
         // Get opened ceremonies.
         const runningCeremoniesQuerySnap = await queryCeremoniesByStateAndDate(CeremonyState.OPENED, false, "<=")
