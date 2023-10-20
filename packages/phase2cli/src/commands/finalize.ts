@@ -269,16 +269,20 @@ const finalize = async (opt: any) => {
     const selectedCeremony = await promptForCeremonySelection(ceremoniesClosedForFinalization, true)
 
     // Get coordinator participant document.
+    console.log("getting coordinator participant document");
     let participant = await getDocumentById(
         firestoreDatabase,
         getParticipantsCollectionPath(selectedCeremony.id),
         user.uid
     )
+    console.log("got coordinator participant document");
 
     const isCoordinatorReadyForCeremonyFinalization = await checkAndPrepareCoordinatorForFinalization(
         firebaseFunctions,
         selectedCeremony.id
     )
+
+    console.log("checked and prepared coordinator for finalization:", isCoordinatorReadyForCeremonyFinalization);
 
     if (!isCoordinatorReadyForCeremonyFinalization)
         showError(COMMAND_ERRORS.COMMAND_FINALIZED_NOT_READY_FOR_FINALIZATION, true)
