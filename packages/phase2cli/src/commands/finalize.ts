@@ -10,7 +10,6 @@ import {
     getVerificationKeyStorageFilePath,
     getBucketName,
     multiPartUpload,
-    getVerifierContractStorageFilePath,
     finalizeCeremony,
     generateValidContributionsAttestation,
     commonTerms,
@@ -18,7 +17,6 @@ import {
     computeSHA256ToHex,
     finalizeCircuit,
     verificationKeyAcronym,
-    verifierSmartContractAcronym,
     exportVerifierContract,
     FirebaseDocumentInfo,
     exportVkey
@@ -41,7 +39,6 @@ import {
     getFinalAttestationLocalFilePath,
     getFinalZkeyLocalFilePath,
     getVerificationKeyLocalFilePath,
-    getVerifierContractLocalFilePath,
     localPaths
 } from "../lib/localConfigs.js"
 import theme from "../lib/theme.js"
@@ -188,19 +185,19 @@ export const handleCircuitFinalization = async (
     const verificationKeyLocalFilePath = getVerificationKeyLocalFilePath(
         `${circuitPrefix}_${verificationKeyAcronym}.json`
     )
-    const verifierContractLocalFilePath = getVerifierContractLocalFilePath(
-        `${circuitPrefix}_${verifierSmartContractAcronym}.sol`
-    )
+    // const verifierContractLocalFilePath = getVerifierContractLocalFilePath(
+    //     `${circuitPrefix}_${verifierSmartContractAcronym}.sol`
+    // )
 
     // Prepare storage paths.
     const verificationKeyStorageFilePath = getVerificationKeyStorageFilePath(
         circuitPrefix,
         `${circuitPrefix}_${verificationKeyAcronym}.json`
     )
-    const verifierContractStorageFilePath = getVerifierContractStorageFilePath(
-        circuitPrefix,
-        `${circuitPrefix}_${verifierSmartContractAcronym}.sol`
-    )
+    // const verifierContractStorageFilePath = getVerifierContractStorageFilePath(
+    //     circuitPrefix,
+    //     `${circuitPrefix}_${verifierSmartContractAcronym}.sol`
+    // )
 
     // Get ceremony bucket.
     const bucketName = getBucketName(ceremonyPrefix, String(process.env.CONFIG_CEREMONY_BUCKET_POSTFIX))
@@ -215,13 +212,13 @@ export const handleCircuitFinalization = async (
     )
 
     // Step (3 & 4).
-    await handleVerifierSmartContract(
-        cloudFunctions,
-        bucketName,
-        finalZkeyLocalFilePath,
-        verifierContractLocalFilePath,
-        verifierContractStorageFilePath
-    )
+    // await handleVerifierSmartContract(
+    //     cloudFunctions,
+    //     bucketName,
+    //     finalZkeyLocalFilePath,
+    //     verifierContractLocalFilePath,
+    //     verifierContractStorageFilePath
+    // )
 
     // Step (5).
     const spinner = customSpinner(`Wrapping up the finalization of the circuit...`, `clock`)
@@ -300,7 +297,7 @@ const finalize = async (opt: any) => {
     checkAndMakeNewDirectoryIfNonexistent(localPaths.finalPot)
     checkAndMakeNewDirectoryIfNonexistent(localPaths.finalAttestations)
     checkAndMakeNewDirectoryIfNonexistent(localPaths.verificationKeys)
-    checkAndMakeNewDirectoryIfNonexistent(localPaths.verifierContracts)
+    // checkAndMakeNewDirectoryIfNonexistent(localPaths.verifierContracts)
 
     // Get ceremony circuits.
     const circuits = await getCeremonyCircuits(firestoreDatabase, selectedCeremony.id)

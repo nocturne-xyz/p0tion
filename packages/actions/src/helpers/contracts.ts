@@ -266,12 +266,12 @@ export const verifyCeremony = async (
             )
 
         // 8. deploy Verifier contract and verify the proof on-chain
-        const verifierContract = await deployVerifierContract(verifierLocalPath, signer)
-        const formattedProof = await formatSolidityCalldata(publicSignals, proof)
-        const isProofValidOnChain = await verifyGROTH16ProofOnChain(verifierContract, formattedProof)
-        if (!isProofValidOnChain)
-            throw new Error(
-                `Could not verify the proof on-chain for Circuit ${ceremonyArtifact.circuitPrefix}. Please check that the artifacts are correct as well as the inputs to the circuit, and try again.`
-            )
+        // const verifierContract = await deployVerifierContract(verifierLocalPath, signer)
+        // const formattedProof = await formatSolidityCalldata(publicSignals, proof)
+        // const isProofValidOnChain = await verifyGROTH16ProofOnChain(verifierContract, formattedProof)
+        // if (!isProofValidOnChain)
+        //     throw new Error(
+        //         `Could not verify the proof on-chain for Circuit ${ceremonyArtifact.circuitPrefix}. Please check that the artifacts are correct as well as the inputs to the circuit, and try again.`
+        //     )
     }
 }
