@@ -996,32 +996,32 @@ export const finalizeCircuit = functionsV1
 
         // Prepare filenames and storage paths.
         const verificationKeyFilename = `${circuitPrefix}_${verificationKeyAcronym}.json`
-        const verifierContractFilename = `${circuitPrefix}_${verifierSmartContractAcronym}.sol`
+        // const verifierContractFilename = `${circuitPrefix}_${verifierSmartContractAcronym}.sol`
         const verificationKeyStorageFilePath = getVerificationKeyStorageFilePath(circuitPrefix, verificationKeyFilename)
-        const verifierContractStorageFilePath = getVerifierContractStorageFilePath(
-            circuitPrefix,
-            verifierContractFilename
-        )
+        // const verifierContractStorageFilePath = getVerifierContractStorageFilePath(
+        //     circuitPrefix,
+        //     verifierContractFilename
+        // )
 
         // Prepare temporary paths.
         const verificationKeyTemporaryFilePath = createTemporaryLocalPath(verificationKeyFilename)
-        const verifierContractTemporaryFilePath = createTemporaryLocalPath(verifierContractFilename)
+        // const verifierContractTemporaryFilePath = createTemporaryLocalPath(verifierContractFilename)
 
         // Download artifact from ceremony bucket.
         await downloadArtifactFromS3Bucket(bucketName, verificationKeyStorageFilePath, verificationKeyTemporaryFilePath)
-        await downloadArtifactFromS3Bucket(
-            bucketName,
-            verifierContractStorageFilePath,
-            verifierContractTemporaryFilePath
-        )
+        // await downloadArtifactFromS3Bucket(
+        //     bucketName,
+        //     verifierContractStorageFilePath,
+        //     verifierContractTemporaryFilePath
+        // )
 
         // Compute hash before unlink.
         const verificationKeyBlake2bHash = await blake512FromPath(verificationKeyTemporaryFilePath)
-        const verifierContractBlake2bHash = await blake512FromPath(verifierContractTemporaryFilePath)
+        // const verifierContractBlake2bHash = await blake512FromPath(verifierContractTemporaryFilePath)
 
         // Free resources by unlinking temporary folders.
         fs.unlinkSync(verificationKeyTemporaryFilePath)
-        fs.unlinkSync(verifierContractTemporaryFilePath)
+        // fs.unlinkSync(verifierContractTemporaryFilePath)
 
         // Add references and hashes of the final contribution artifacts.
         await contributionDoc.ref.update({
@@ -1030,9 +1030,9 @@ export const finalizeCircuit = functionsV1
                 verificationKeyBlake2bHash,
                 verificationKeyFilename,
                 verificationKeyStoragePath: verificationKeyStorageFilePath,
-                verifierContractBlake2bHash,
-                verifierContractFilename,
-                verifierContractStoragePath: verifierContractStorageFilePath
+                // verifierContractBlake2bHash,
+                // verifierContractFilename,
+                // verifierContractStoragePath: verifierContractStorageFilePath
             },
             beacon: {
                 value: beacon,
