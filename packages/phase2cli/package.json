@@ -1,7 +1,7 @@
 {
     "name": "@nocturne-xyz/nocturne-setup",
     "type": "module",
-    "version": "0.2.1-alpha2",
+    "version": "0.2.1",
     "description": "All-in-one interactive command-line for interfacing with zkSNARK Phase 2 Trusted Setup ceremonies",
     "repository": "git@github.com:privacy-scaling-explorations/p0tion.git",
     "homepage": "https://github.com/privacy-scaling-explorations/p0tion",
@@ -66,7 +66,7 @@
     "dependencies": {
         "@adobe/node-fetch-retry": "^2.2.0",
         "@aws-sdk/client-s3": "^3.329.0",
-        "@nocturne-xyz/p0tion-actions": "0.1.2",
+        "@nocturne-xyz/p0tion-actions": "0.1.3",
         "@octokit/auth-oauth-app": "^5.0.5",
         "@octokit/auth-oauth-device": "^4.0.4",
         "@octokit/request": "^6.2.3",

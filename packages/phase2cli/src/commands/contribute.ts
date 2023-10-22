@@ -90,7 +90,6 @@ export const getLatestVerificationResult = async (
  * @param gistUrl <string> - the Github public attestation gist url.
  */
 export const handleTweetGeneration = async (hashes: string[]): Promise<void> => {
-    console.log({ hashes });
     // Generate a ready to share custom url to tweet about ceremony participation.
     const tweetUrl = generateCustomUrlToTweetAboutParticipation(hashes)
 
