@@ -89,17 +89,11 @@ export const getLatestVerificationResult = async (
  * @param ceremonyTitle <string> - the title of the ceremony.
  * @param gistUrl <string> - the Github public attestation gist url.
  */
-export const handleTweetGeneration = async (ceremonyTitle: string, gistUrl: string): Promise<void> => {
+export const handleTweetGeneration = async (hashes: string[]): Promise<void> => {
     // Generate a ready to share custom url to tweet about ceremony participation.
-    const tweetUrl = generateCustomUrlToTweetAboutParticipation(ceremonyTitle, gistUrl, false)
+    const tweetUrl = generateCustomUrlToTweetAboutParticipation(hashes)
 
-    console.log(
-        `${
-            theme.symbols.info
-        } We encourage you to tweet to spread the word about your participation to the ceremony by clicking the link below\n\n${theme.text.underlined(
-            tweetUrl
-        )}`
-    )
+    console.log(`${theme.symbols.info} 🌙 Tweet about your contribution: \n\n${theme.text.underlined(tweetUrl)}`)
 
     // Automatically open a webpage with the tweet.
     await open(tweetUrl)
@@ -346,7 +340,7 @@ export const handleDiskSpaceRequirementForNextContribution = async (
  * @param participantContributions <Array<Co> - the document data of the participant.
  * @param contributorIdentifier <string> - the identifier of the contributor (handle, name, uid).
  * @param ceremonyName <string> - the name of the ceremony.
- * @returns <Promise<string>> - the public attestation.
+ * @returns <Promise<[string, string[]]>> - the public attestation followed by a list of the contribution hashes
  */
 export const generatePublicAttestation = async (
     firestoreDatabase: Firestore,
@@ -356,7 +350,7 @@ export const generatePublicAttestation = async (
     participantContributions: Array<Contribution>,
     contributorIdentifier: string,
     ceremonyName: string
-): Promise<string> => {
+): Promise<[string, string[]]> => {
     // Display contribution validity.
     await handleContributionValidity(firestoreDatabase, circuits, ceremonyId, participantId)
 
@@ -401,7 +395,7 @@ export const handlePublicAttestation = async (
     await simpleLoader(`Generating your public attestation...`, `clock`, 3000)
 
     // Generate attestation with valid contributions.
-    const publicAttestation = await generatePublicAttestation(
+    const [publicAttestation, hashes] = await generatePublicAttestation(
         firestoreDatabase,
         circuits,
         ceremonyId,
@@ -428,7 +422,7 @@ export const handlePublicAttestation = async (
     )
 
     // Prepare a ready-to-share tweet.
-    await handleTweetGeneration(ceremonyName, gistUrl)
+    await handleTweetGeneration(hashes)
 }
 
 /**
@@ -1064,7 +1058,16 @@ const contribute = async (opt: any) => {
                 )
 
                 // Prepare a ready-to-share tweet.
-                await handleTweetGeneration(selectedCeremony.data.title, gistUrl)
+                const [, hashes] = await generatePublicAttestation(
+                    firestoreDatabase,
+                    circuits,
+                    selectedCeremony.id,
+                    participant.id,
+                    participantData?.contributions!,
+                    providerUserId,
+                    selectedCeremony.data.title
+                )
+                await handleTweetGeneration(hashes)
             }
 
             console.log(

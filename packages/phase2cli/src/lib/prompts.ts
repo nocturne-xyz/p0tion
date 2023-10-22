@@ -733,9 +733,9 @@ export const promptToTypeEntropyOrBeacon = async (isEntropy = true): Promise<str
 export const promptForEntropy = async (): Promise<string> => {
     // Prompt for entropy generation prefered method.
     const { confirmation } = await askForConfirmation(
-        `Do you prefer to type your entropy or generate it randomly?`,
+        `Would you like to automatically sample your entropy or manually type it in?`,
         "Manually",
-        "Randomly"
+        "Automatically"
     )
 
     if (confirmation === undefined) showError(COMMAND_ERRORS.COMMAND_ABORT_PROMPT, true)

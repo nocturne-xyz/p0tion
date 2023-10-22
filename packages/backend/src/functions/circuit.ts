@@ -42,12 +42,7 @@ import { zKey } from "snarkjs"
 import { CommandInvocationStatus, SSMClient } from "@aws-sdk/client-ssm"
 import { FinalizeCircuitData, VerifyContributionData } from "../types/index"
 import { LogLevel } from "../types/enums"
-import {
-    COMMON_ERRORS,
-    logAndThrowError,
-    printLog,
-    SPECIFIC_ERRORS
-} from "../lib/errors"
+import { COMMON_ERRORS, logAndThrowError, printLog, SPECIFIC_ERRORS } from "../lib/errors"
 import {
     createEC2Client,
     createSSMClient,
@@ -283,7 +278,7 @@ const waitForVMCommandExecution = (ssm: SSMClient, vmInstanceId: string, command
             }
         }
 
-        setTimeout(poll, 60000);
+        setTimeout(poll, 60000)
     })
 
 /**
@@ -1029,7 +1024,7 @@ export const finalizeCircuit = functionsV1
                 ...files,
                 verificationKeyBlake2bHash,
                 verificationKeyFilename,
-                verificationKeyStoragePath: verificationKeyStorageFilePath,
+                verificationKeyStoragePath: verificationKeyStorageFilePath
                 // verifierContractBlake2bHash,
                 // verifierContractFilename,
                 // verifierContractStoragePath: verifierContractStorageFilePath

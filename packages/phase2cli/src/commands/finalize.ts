@@ -269,20 +269,20 @@ const finalize = async (opt: any) => {
     const selectedCeremony = await promptForCeremonySelection(ceremoniesClosedForFinalization, true)
 
     // Get coordinator participant document.
-    console.log("getting coordinator participant document");
+    console.log("getting coordinator participant document")
     let participant = await getDocumentById(
         firestoreDatabase,
         getParticipantsCollectionPath(selectedCeremony.id),
         user.uid
     )
-    console.log("got coordinator participant document");
+    console.log("got coordinator participant document")
 
     const isCoordinatorReadyForCeremonyFinalization = await checkAndPrepareCoordinatorForFinalization(
         firebaseFunctions,
         selectedCeremony.id
     )
 
-    console.log("checked and prepared coordinator for finalization:", isCoordinatorReadyForCeremonyFinalization);
+    console.log("checked and prepared coordinator for finalization:", isCoordinatorReadyForCeremonyFinalization)
 
     if (!isCoordinatorReadyForCeremonyFinalization)
         showError(COMMAND_ERRORS.COMMAND_FINALIZED_NOT_READY_FOR_FINALIZATION, true)
@@ -341,7 +341,7 @@ const finalize = async (opt: any) => {
     const { prefix, title: ceremonyName } = selectedCeremony.data
 
     // Generate attestation with final contributions.
-    const publicAttestation = await generateValidContributionsAttestation(
+    const [publicAttestation, hashes] = await generateValidContributionsAttestation(
         firestoreDatabase,
         circuits,
         selectedCeremony.id,
@@ -373,7 +373,7 @@ const finalize = async (opt: any) => {
     )
 
     // Generate a ready to share custom url to tweet about ceremony participation.
-    const tweetUrl = generateCustomUrlToTweetAboutParticipation(ceremonyName, gistUrl, true)
+    const tweetUrl = generateCustomUrlToTweetAboutParticipation(hashes)
 
     console.log(
         `${

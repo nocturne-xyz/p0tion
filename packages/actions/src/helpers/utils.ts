@@ -455,6 +455,27 @@ export const getPublicAttestationPreambleForContributor = (
             : " MPC Phase2 Trusted Setup ceremony."
     }\nThe following are my contribution signatures:`
 
+function extractHashFromMessage(input: string): string {
+    if (!input.startsWith("Contribution Hash:")) {
+        throw new Error("invalid contribution hash message");
+    }
+
+    [, input] = input.split(":")
+    // Define a regular expression to match hex strings
+    const hexRegex = /[0-9a-fA-F]+/g
+
+    // Use the regular expression to find all hex strings in the input
+    const hexStrings = input.match(hexRegex)
+
+    // If there are hex strings, concatenate them with "0x" and return
+    if (hexStrings && hexStrings.length > 0) {
+        const concatenatedHex = hexStrings.join("")
+        return `0x${concatenatedHex}`
+    }
+    // If no hex strings were found, throw error
+    throw new Error("No hex strings found in input")
+}
+
 /**
  * Check and prepare public attestation for the contributor made only of its valid contributions.
  * @param firestoreDatabase <Firestore> - the Firestore service instance associated to the current Firebase application.
@@ -465,7 +486,7 @@ export const getPublicAttestationPreambleForContributor = (
  * @param contributorIdentifier <string> - the identifier of the contributor (handle, name, uid).
  * @param ceremonyName <string> - the name of the ceremony.
  * @param isFinalizing <boolean> - true when the coordinator is finalizing the ceremony, otherwise false.
- * @returns <Promise<string>> - the public attestation for the contributor.
+ * @returns <Promise<[string, string[]]>> - the public attestation for the contributor followed by the concatenated hashes of the contributions for each circuit
  */
 export const generateValidContributionsAttestation = async (
     firestoreDatabase: Firestore,
@@ -476,7 +497,7 @@ export const generateValidContributionsAttestation = async (
     contributorIdentifier: string,
     ceremonyName: string,
     isFinalizing: boolean
-): Promise<string> => {
+): Promise<[string, string[]]> => {
     // Generate the attestation preamble for the contributor.
     let publicAttestation = getPublicAttestationPreambleForContributor(
         contributorIdentifier,
@@ -493,6 +514,7 @@ export const generateValidContributionsAttestation = async (
         isFinalizing
     )
 
+    const hashes = []
     for await (const contributionWithValidity of contributionsWithValidity) {
         // Filter for the related contribution document info.
         const matchedContributions = participantContributions.filter(
@@ -532,9 +554,11 @@ export const generateValidContributionsAttestation = async (
         publicAttestation = `${publicAttestation}\n\nCircuit # ${sequencePosition} (${prefix})\nContributor # ${
             zkeyIndex > 0 ? Number(zkeyIndex) : zkeyIndex
         }\n${participantContribution.hash}`
+
+        hashes.push(extractHashFromMessage(participantContribution.hash))
     }
 
-    return publicAttestation
+    return [publicAttestation, hashes]
 }
 
 /**

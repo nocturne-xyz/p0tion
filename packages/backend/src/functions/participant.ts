@@ -484,19 +484,19 @@ export const checkAndPrepareCoordinatorForFinalization = functions
         const userId = context.auth?.uid
 
         // Look for the ceremony document.
-        printLog(`fetching document for ceremonyId ${ceremonyId}`, LogLevel.DEBUG);
+        printLog(`fetching document for ceremonyId ${ceremonyId}`, LogLevel.DEBUG)
         const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
 
-        printLog(`fetching coordinator documuent for userId ${userId}`, LogLevel.DEBUG);
+        printLog(`fetching coordinator documuent for userId ${userId}`, LogLevel.DEBUG)
         const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyId), userId!)
 
-        printLog(`checking both documents exist`, LogLevel.DEBUG);
+        printLog(`checking both documents exist`, LogLevel.DEBUG)
         if (!ceremonyDoc.data() || !participantDoc.data()) logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA)
 
         // Get ceremony circuits.
-        printLog("getting ceremony circuits", LogLevel.DEBUG);
+        printLog("getting ceremony circuits", LogLevel.DEBUG)
         const circuits = await getCeremonyCircuits(ceremonyId)
-        printLog("got ceremony circuits", LogLevel.DEBUG);
+        printLog("got ceremony circuits", LogLevel.DEBUG)
 
         // Extract data.
         const { state } = ceremonyDoc.data()!
