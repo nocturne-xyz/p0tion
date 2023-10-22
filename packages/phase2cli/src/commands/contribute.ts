@@ -90,6 +90,7 @@ export const getLatestVerificationResult = async (
  * @param gistUrl <string> - the Github public attestation gist url.
  */
 export const handleTweetGeneration = async (hashes: string[]): Promise<void> => {
+    console.log({ hashes });
     // Generate a ready to share custom url to tweet about ceremony participation.
     const tweetUrl = generateCustomUrlToTweetAboutParticipation(hashes)
 
@@ -1058,14 +1059,15 @@ const contribute = async (opt: any) => {
                 )
 
                 // Prepare a ready-to-share tweet.
-                const [, hashes] = await generatePublicAttestation(
+                const [, hashes] = await generateValidContributionsAttestation(
                     firestoreDatabase,
                     circuits,
                     selectedCeremony.id,
                     participant.id,
                     participantData?.contributions!,
                     providerUserId,
-                    selectedCeremony.data.title
+                    selectedCeremony.data.title,
+                    false
                 )
                 await handleTweetGeneration(hashes)
             }

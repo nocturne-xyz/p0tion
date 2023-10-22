@@ -460,7 +460,7 @@ function extractHashFromMessage(input: string): string {
         throw new Error("invalid contribution hash message");
     }
 
-    [, input] = input.split(":")
+    input = input.slice("Contribution Hash:".length);
     // Define a regular expression to match hex strings
     const hexRegex = /[0-9a-fA-F]+/g
 
