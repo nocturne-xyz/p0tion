@@ -300,14 +300,13 @@ export const publishGist = async (
 
 /**
  * Generate a custom url that when clicked allows you to compose a tweet ready to be shared.
- * @param ceremonyName <string> - the name of the ceremony.
- * @param gistUrl <string> - the url of the gist where the public attestation has been shared.
- * @param isFinalizing <boolean> - flag to discriminate between ceremony finalization (true) and contribution (false).
+ * @param hashes <string> - the contribution hashes of the circuits. If there are more than 2 circuits, the other hashes will be omitted
  * @returns <string> - the ready to share tweet url.
  */
 
-export const generateCustomUrlToTweetAboutParticipation = (strings: string[]): string => {
-    const tweetMessage = strings.join("\n\n")
+export const generateCustomUrlToTweetAboutParticipation = (hashes: string[]): string => {
+    const msgHashes = hashes.length > 2 ? hashes.slice(0, 2) : hashes;
+    const tweetMessage = msgHashes.join("\n\n")
     const encodedMessage = encodeURIComponent(`🌙 @nocturne_xyz\n\n${tweetMessage}`)
     const tweetURL = `https://twitter.com/intent/tweet?text=${encodedMessage}`
     return tweetURL
