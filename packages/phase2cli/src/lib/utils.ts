@@ -307,8 +307,8 @@ export const publishGist = async (
 export const generateCustomUrlToTweetAboutParticipation = (hashes: string[]): string => {
     const msgHashes = hashes.length > 2 ? hashes.slice(0, 2) : hashes;
     const tweetMessage = msgHashes.join("\n\n")
-    const encodedMessage = encodeURIComponent(`🌙 @nocturne_xyz\n\n${tweetMessage}`)
-    const tweetURL = `https://twitter.com/intent/tweet?text=${encodedMessage}`
+    const encodedMessage = encodeURIComponent(`🌙@nocturne_xyz\n\n${tweetMessage}`)
+    const tweetURL = `https://twitter.com/intent/tweet/?text=${encodedMessage}`
     return tweetURL
 }
 
