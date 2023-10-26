@@ -57,6 +57,7 @@ import {
 } from "../lib/utils"
 import { EC2Client } from "@aws-sdk/client-ec2"
 import { HttpsError } from "firebase-functions/v2/https"
+import { Mutex } from "async-mutex"
 
 dotenv.config()
 
@@ -428,6 +429,21 @@ const checkIfVMRunning = async (ec2: EC2Client, vmInstanceId: string, attempts =
     }
 }
 
+
+const mutex = new Mutex()
+let __firestore: admin.firestore.Firestore | undefined
+const getFirestoreVerifyContribution = async () => mutex.runExclusive(async () => {
+    if (__firestore === undefined) {
+        __firestore = admin.firestore()
+        __firestore.settings({
+            preferRest: true,
+            timestampsInSnapshots: true
+        })
+    }
+
+    return __firestore
+})
+
 /**
  * Verify the contribution of a participant computed while contributing to a specific circuit of a ceremony.
  * @dev a huge amount of resources (memory, CPU, and execution time) is required for the contribution verification task.
@@ -482,11 +498,8 @@ export const verifycontribution = functionsV2.https.onCall(
         verifyContributionTimer.start()
 
         // Get DB.
-        const firestore = admin.firestore()
-        firestore.settings({
-            preferRest: true,
-            timestampsInSnapshots: true
-        })
+        const firestore = await getFirestoreVerifyContribution();
+
         // Prepare batch of txs.
         const batch = firestore.batch()
 
