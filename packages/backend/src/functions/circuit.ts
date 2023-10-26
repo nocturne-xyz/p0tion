@@ -416,6 +416,8 @@ const checkIfVMRunning = async (ec2: EC2Client, vmInstanceId: string, attempts =
 
     await sleep(60000) // Wait for 1 min
     const isVMRunning = await checkIfRunning(ec2, vmInstanceId)
+    // sleep for 10 seconds and give the VM extra time to start
+    await sleep(10000)
 
     if (!isVMRunning) {
         printLog(`VM not running, ${attempts - 1} attempts remaining. Retrying in 1 minute...`, LogLevel.DEBUG)

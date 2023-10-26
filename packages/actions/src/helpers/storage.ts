@@ -13,6 +13,7 @@ import {
     temporaryStoreCurrentContributionMultiPartUploadId,
     temporaryStoreCurrentContributionUploadedChunkData
 } from "./functions"
+import { GenericBar } from "cli-progress"
 
 /**
  * Return the bucket name based on ceremony prefix.
@@ -87,10 +88,14 @@ export const uploadParts = async (
     contentType: string | false,
     cloudFunctions?: Functions,
     ceremonyId?: string,
-    alreadyUploadedChunks?: Array<ETagWithPartNumber>
+    alreadyUploadedChunks?: Array<ETagWithPartNumber>,
+    logger?: GenericBar
 ): Promise<Array<ETagWithPartNumber>> => {
     // Keep track of uploaded chunks.
     const uploadedChunks: Array<ETagWithPartNumber> = alreadyUploadedChunks || []
+
+    // if we were passed a logger, start it
+    if (logger) logger.start(chunksWithUrls.length, 0)
 
     // Loop through remaining chunks.
     for (let i = alreadyUploadedChunks ? alreadyUploadedChunks.length : 0; i < chunksWithUrls.length; i += 1) {
@@ -130,6 +135,10 @@ export const uploadParts = async (
         // nb. this must be done only when contributing (not finalizing).
         if (!!ceremonyId && !!cloudFunctions)
             await temporaryStoreCurrentContributionUploadedChunkData(cloudFunctions, ceremonyId, chunk)
+
+        
+        // increment the count on the logger
+        if (logger) logger.increment()
     }
 
     return uploadedChunks
@@ -160,7 +169,8 @@ export const multiPartUpload = async (
     localFilePath: string,
     configStreamChunkSize: number,
     ceremonyId?: string,
-    temporaryDataToResumeMultiPartUpload?: TemporaryParticipantContributionData
+    temporaryDataToResumeMultiPartUpload?: TemporaryParticipantContributionData,
+    logger?: GenericBar 
 ) => {
     // The unique identifier of the multi-part upload.
     let multiPartUploadId: string = ""
@@ -200,7 +210,8 @@ export const multiPartUpload = async (
         mime.lookup(localFilePath), // content-type.
         cloudFunctions,
         ceremonyId,
-        alreadyUploadedChunks
+        alreadyUploadedChunks,
+        logger 
     )
 
     // Step (3).
