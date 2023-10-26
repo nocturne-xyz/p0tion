@@ -24,6 +24,10 @@ export const registerAuthUser = functions
     .onCreate(async (user: UserRecord) => {
         // Get DB.
         const firestore = admin.firestore()
+        firestore.settings({
+            preferRest: true,
+            timestampsInSnapshots: true
+        })
         // Get user information.
         if (!user.uid) logAndThrowError(SPECIFIC_ERRORS.SE_AUTH_NO_CURRENT_AUTH_USER)
         // The user object has basic properties such as display name, email, etc.

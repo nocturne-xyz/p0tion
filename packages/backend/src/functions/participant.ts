@@ -57,6 +57,10 @@ export const checkParticipantForCeremony = functions
 
         // Prepare Firestore DB.
         const firestore = admin.firestore()
+        firestore.settings({
+            preferRest: true,
+            timestampsInSnapshots: true
+        })
 
         // Get data.
         const { ceremonyId } = data

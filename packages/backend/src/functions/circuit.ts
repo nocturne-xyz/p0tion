@@ -309,6 +309,12 @@ export const coordinateCeremonyParticipant = functionsV1
         `${commonTerms.collections.ceremonies.name}/{ceremonyId}/${commonTerms.collections.participants.name}/{participantId}`
     )
     .onUpdate(async (participantChanges: Change<QueryDocumentSnapshot>) => {
+        const firestore = admin.firestore()
+        firestore.settings({
+            preferRest: true,
+            timestampsInSnapshots: true
+        })
+
         // Step (0).
         const exParticipant = participantChanges.before
         const changedParticipant = participantChanges.after
@@ -482,6 +488,10 @@ export const verifycontribution = functionsV2.https.onCall(
 
         // Get DB.
         const firestore = admin.firestore()
+        firestore.settings({
+            preferRest: true,
+            timestampsInSnapshots: true
+        })
         // Prepare batch of txs.
         const batch = firestore.batch()
 
@@ -891,6 +901,10 @@ export const refreshParticipantAfterContributionVerification = functionsV1
     .onCreate(async (createdContribution: QueryDocumentSnapshot) => {
         // Prepare db.
         const firestore = admin.firestore()
+        firestore.settings({
+            preferRest: true,
+            timestampsInSnapshots: true
+        })
         // Prepare batch of txs.
         const batch = firestore.batch()
 

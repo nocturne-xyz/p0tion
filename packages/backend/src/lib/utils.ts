@@ -141,8 +141,9 @@ export const queryNotExpiredTimeouts = async (
  * @returns <Promise<Array<FirebaseDocumentInfo>>>
  */
 export const queryOpenedCeremonies = async (): Promise<Array<QueryDocumentSnapshot<DocumentData>>> => {
-    const querySnap = await admin
-        .firestore()
+    const firestore = admin.firestore()
+    
+    const querySnap = await firestore
         .collection(commonTerms.collections.ceremonies.name)
         .where(commonTerms.collections.ceremonies.fields.state, "==", CeremonyState.OPENED)
         .where(commonTerms.collections.ceremonies.fields.endDate, ">=", getCurrentServerTimestampInMillis())
@@ -323,9 +324,9 @@ export const queryCeremoniesByStateAndDate = async (
     state: string,
     needToCheckStartDate: boolean,
     check: WhereFilterOp
-): Promise<admin.firestore.QuerySnapshot<admin.firestore.DocumentData>> =>
-    admin
-        .firestore()
+): Promise<admin.firestore.QuerySnapshot<admin.firestore.DocumentData>> => {
+    const firestore = admin.firestore()
+    return firestore
         .collection(commonTerms.collections.ceremonies.name)
         .where(commonTerms.collections.ceremonies.fields.state, "==", state)
         .where(
@@ -336,6 +337,7 @@ export const queryCeremoniesByStateAndDate = async (
             getCurrentServerTimestampInMillis()
         )
         .get()
+}
 
 /**
  * Return the document associated with the final contribution for a ceremony circuit.

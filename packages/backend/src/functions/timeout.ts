@@ -48,6 +48,10 @@ export const checkAndRemoveBlockingContributor = functions
     .onRun(async () => {
         // Prepare Firestore DB.
         const firestore = admin.firestore()
+        firestore.settings({
+            preferRest: true,
+            timestampsInSnapshots: true
+        })
         // Get current server timestamp in milliseconds.
         const currentServerTimestamp = getCurrentServerTimestampInMillis()
 

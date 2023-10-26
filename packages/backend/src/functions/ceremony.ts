@@ -108,6 +108,10 @@ export const setupCeremony = functions
 
         // Prepare Firestore DB.
         const firestore = admin.firestore()
+        firestore.settings({
+            preferRest: true,
+            timestampsInSnapshots: true
+        })
         const batch = firestore.batch()
 
         // Prepare data.
@@ -236,6 +240,10 @@ export const initEmptyWaitingQueueForCircuit = functions
     .onCreate(async (doc: QueryDocumentSnapshot) => {
         // Prepare Firestore DB.
         const firestore = admin.firestore()
+        firestore.settings({
+            preferRest: true,
+            timestampsInSnapshots: true
+        })
 
         // Get circuit document identifier and data.
         const circuitId = doc.id
@@ -282,6 +290,10 @@ export const finalizeCeremony = functions
 
         // Prepare Firestore DB.
         const firestore = admin.firestore()
+        firestore.settings({
+            preferRest: true,
+            timestampsInSnapshots: true
+        })
         const batch = firestore.batch()
 
         // Extract data.
