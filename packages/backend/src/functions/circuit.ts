@@ -309,12 +309,6 @@ export const coordinateCeremonyParticipant = functionsV1
         `${commonTerms.collections.ceremonies.name}/{ceremonyId}/${commonTerms.collections.participants.name}/{participantId}`
     )
     .onUpdate(async (participantChanges: Change<QueryDocumentSnapshot>) => {
-        const firestore = admin.firestore()
-        firestore.settings({
-            preferRest: true,
-            timestampsInSnapshots: true
-        })
-
         // Step (0).
         const exParticipant = participantChanges.before
         const changedParticipant = participantChanges.after
