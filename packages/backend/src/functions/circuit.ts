@@ -16,10 +16,8 @@ import {
     formatZkeyIndex,
     getTranscriptStorageFilePath,
     getVerificationKeyStorageFilePath,
-    getVerifierContractStorageFilePath,
     finalContributionIndex,
     verificationKeyAcronym,
-    verifierSmartContractAcronym,
     computeSHA256ToHex,
     ParticipantStatus,
     ParticipantContributionStep,
@@ -176,6 +174,7 @@ const coordinate = async (
 
             // Pass the baton to the new contributor.
             const newCurrentContributorDocument = await getDocumentById(
+                firestore,
                 getParticipantsCollectionPath(ceremonyId),
                 newCurrentContributorId
             )
@@ -309,6 +308,8 @@ export const coordinateCeremonyParticipant = functionsV1
         `${commonTerms.collections.ceremonies.name}/{ceremonyId}/${commonTerms.collections.participants.name}/{participantId}`
     )
     .onUpdate(async (participantChanges: Change<QueryDocumentSnapshot>) => {
+        const firestore = admin.firestore()
+
         // Step (0).
         const exParticipant = participantChanges.before
         const changedParticipant = participantChanges.after
@@ -379,7 +380,7 @@ export const coordinateCeremonyParticipant = functionsV1
             )
 
             // Get the circuit.
-            const circuit = await getCircuitDocumentByPosition(ceremonyId, changedContributionProgress)
+            const circuit = await getCircuitDocumentByPosition(firestore, ceremonyId, changedContributionProgress)
 
             // Coordinate.
             await coordinate(changedParticipant, circuit, true)
@@ -393,7 +394,7 @@ export const coordinateCeremonyParticipant = functionsV1
             )
 
             // Get the circuit.
-            const circuit = await getCircuitDocumentByPosition(ceremonyId, prevContributionProgress)
+            const circuit = await getCircuitDocumentByPosition(firestore, ceremonyId, prevContributionProgress)
 
             // Coordinate.
             await coordinate(changedParticipant, circuit, false, ceremonyId)
@@ -494,9 +495,9 @@ export const verifycontribution = functionsV2.https.onCall(
         const userId = request.auth?.uid
 
         // Look for the ceremony, circuit and participant document.
-        const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
-        const circuitDoc = await getDocumentById(getCircuitsCollectionPath(ceremonyId), circuitId)
-        const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyId), userId!)
+        const ceremonyDoc = await getDocumentById(firestore, commonTerms.collections.ceremonies.name, ceremonyId)
+        const circuitDoc = await getDocumentById(firestore, getCircuitsCollectionPath(ceremonyId), circuitId)
+        const participantDoc = await getDocumentById(firestore, getParticipantsCollectionPath(ceremonyId), userId!)
 
         if (!ceremonyDoc.data() || !circuitDoc.data() || !participantDoc.data())
             logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA)
@@ -725,7 +726,7 @@ export const verifycontribution = functionsV2.https.onCall(
                         : verifyCloudFunctionTime
 
                 // Prepare tx to update circuit average contribution/verification time.
-                const updatedCircuitDoc = await getDocumentById(getCircuitsCollectionPath(ceremonyId), circuitId)
+                const updatedCircuitDoc = await getDocumentById(firestore, getCircuitsCollectionPath(ceremonyId), circuitId)
                 const { waitingQueue: updatedWaitingQueue } = updatedCircuitDoc.data()!
                 /// @dev this must happen only for valid contributions.
                 batch.update(circuitDoc.ref, {
@@ -895,10 +896,6 @@ export const refreshParticipantAfterContributionVerification = functionsV1
     .onCreate(async (createdContribution: QueryDocumentSnapshot) => {
         // Prepare db.
         const firestore = admin.firestore()
-        firestore.settings({
-            preferRest: true,
-            timestampsInSnapshots: true
-        })
         // Prepare batch of txs.
         const batch = firestore.batch()
 
@@ -918,8 +915,8 @@ export const refreshParticipantAfterContributionVerification = functionsV1
         const { participantId } = createdContribution.data()!
 
         // Get documents from derived paths.
-        const circuits = await getCeremonyCircuits(ceremonyId)
-        const participantDoc = await getDocumentById(ceremonyParticipantsCollectionPath, participantId)
+        const circuits = await getCeremonyCircuits(firestore, ceremonyId)
+        const participantDoc = await getDocumentById(firestore, ceremonyParticipantsCollectionPath, participantId)
 
         if (!participantDoc.data()) logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA)
 
@@ -982,15 +979,18 @@ export const finalizeCircuit = functionsV1
         if (!data.ceremonyId || !data.circuitId || !data.bucketName || !data.beacon)
             logAndThrowError(COMMON_ERRORS.CM_MISSING_OR_WRONG_INPUT_DATA)
 
+        // init firestore
+        const firestore = admin.firestore()
+
         // Get data.
         const { ceremonyId, circuitId, bucketName, beacon } = data
         const userId = context.auth?.uid
 
         // Look for documents.
-        const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
-        const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyId), userId!)
-        const circuitDoc = await getDocumentById(getCircuitsCollectionPath(ceremonyId), circuitId)
-        const contributionDoc = await getFinalContribution(ceremonyId, circuitId)
+        const ceremonyDoc = await getDocumentById(firestore, commonTerms.collections.ceremonies.name, ceremonyId)
+        const participantDoc = await getDocumentById(firestore, getParticipantsCollectionPath(ceremonyId), userId!)
+        const circuitDoc = await getDocumentById(firestore, getCircuitsCollectionPath(ceremonyId), circuitId)
+        const contributionDoc = await getFinalContribution(firestore, ceremonyId, circuitId)
 
         if (!ceremonyDoc.data() || !circuitDoc.data() || !participantDoc.data() || !contributionDoc.data())
             logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA)

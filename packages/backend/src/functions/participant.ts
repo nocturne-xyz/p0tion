@@ -57,17 +57,13 @@ export const checkParticipantForCeremony = functions
 
         // Prepare Firestore DB.
         const firestore = admin.firestore()
-        firestore.settings({
-            preferRest: true,
-            timestampsInSnapshots: true
-        })
 
         // Get data.
         const { ceremonyId } = data
         const userId = context.auth?.uid
 
         // Look for the ceremony document.
-        const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
+        const ceremonyDoc = await getDocumentById(firestore, commonTerms.collections.ceremonies.name, ceremonyId)
 
         // Extract data.
         const ceremonyData = ceremonyDoc.data()
@@ -112,7 +108,7 @@ export const checkParticipantForCeremony = functions
         if (!participantData) logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA)
 
         // Get ceremony' circuits.
-        const circuits = await getCeremonyCircuits(ceremonyDoc.id)
+        const circuits = await getCeremonyCircuits(firestore, ceremonyDoc.id)
 
         // Check (2.A).
         if (contributionProgress === circuits.length && status === ParticipantStatus.DONE) {
@@ -129,7 +125,7 @@ export const checkParticipantForCeremony = functions
         // Check (2.B).
         if (status === ParticipantStatus.TIMEDOUT) {
             // Query for not expired timeouts.
-            const notExpiredTimeouts = await queryNotExpiredTimeouts(ceremonyDoc.id, participantDoc.id)
+            const notExpiredTimeouts = await queryNotExpiredTimeouts(firestore, ceremonyDoc.id, participantDoc.id)
 
             if (notExpiredTimeouts.empty) {
                 // nb. stale contribution data is always the latest contribution.
@@ -190,13 +186,15 @@ export const progressToNextCircuitForContribution = functions
 
         if (!data.ceremonyId) logAndThrowError(COMMON_ERRORS.CM_MISSING_OR_WRONG_INPUT_DATA)
 
+        const firestore = admin.firestore();
+
         // Get data.
         const { ceremonyId } = data
         const userId = context.auth?.uid
 
         // Look for the ceremony document.
-        const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
-        const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyId), userId!)
+        const ceremonyDoc = await getDocumentById(firestore, commonTerms.collections.ceremonies.name, ceremonyId)
+        const participantDoc = await getDocumentById(firestore, getParticipantsCollectionPath(ceremonyId), userId!)
 
         // Prepare documents data.
         const participantData = participantDoc.data()
@@ -252,9 +250,11 @@ export const progressToNextContributionStep = functions
         const { ceremonyId } = data
         const userId = context.auth?.uid
 
+        const firestore = admin.firestore();
+
         // Look for the ceremony document.
-        const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
-        const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyDoc.id), userId!)
+        const ceremonyDoc = await getDocumentById(firestore, commonTerms.collections.ceremonies.name, ceremonyId)
+        const participantDoc = await getDocumentById(firestore, getParticipantsCollectionPath(ceremonyDoc.id), userId!)
 
         if (!ceremonyDoc.data() || !participantDoc.data()) logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA)
 
@@ -313,14 +313,16 @@ export const permanentlyStoreCurrentContributionTimeAndHash = functions
             if (!data.ceremonyId || !data.contributionHash || data.contributionComputationTime <= 0)
                 logAndThrowError(COMMON_ERRORS.CM_MISSING_OR_WRONG_INPUT_DATA)
 
+            const firestore = admin.firestore();
+
             // Get data.
             const { ceremonyId } = data
             const userId = context.auth?.uid
             const isCoordinator = context?.auth?.token.coordinator
 
             // Look for the ceremony document.
-            const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
-            const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyDoc.id), userId!)
+            const ceremonyDoc = await getDocumentById(firestore, commonTerms.collections.ceremonies.name, ceremonyId)
+            const participantDoc = await getDocumentById(firestore, getParticipantsCollectionPath(ceremonyDoc.id), userId!)
 
             if (!ceremonyDoc.data() || !participantDoc.data())
                 logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA)
@@ -375,9 +377,11 @@ export const temporaryStoreCurrentContributionMultiPartUploadId = functions
             const { ceremonyId, uploadId } = data
             const userId = context.auth?.uid
 
+            const firestore = admin.firestore();
+
             // Look for the ceremony document.
-            const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
-            const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyDoc.id), userId!)
+            const ceremonyDoc = await getDocumentById(firestore, commonTerms.collections.ceremonies.name, ceremonyId)
+            const participantDoc = await getDocumentById(firestore, getParticipantsCollectionPath(ceremonyDoc.id), userId!)
 
             if (!ceremonyDoc.data() || !participantDoc.data())
                 logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA)
@@ -425,13 +429,15 @@ export const temporaryStoreCurrentContributionUploadedChunkData = functions
 
             if (!data.ceremonyId || !data.chunk) logAndThrowError(COMMON_ERRORS.CM_MISSING_OR_WRONG_INPUT_DATA)
 
+            const firestore = admin.firestore();
+
             // Get data.
             const { ceremonyId, chunk } = data
             const userId = context.auth?.uid
 
             // Look for the ceremony document.
-            const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
-            const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyDoc.id), userId!)
+            const ceremonyDoc = await getDocumentById(firestore, commonTerms.collections.ceremonies.name, ceremonyId)
+            const participantDoc = await getDocumentById(firestore, getParticipantsCollectionPath(ceremonyDoc.id), userId!)
 
             if (!ceremonyDoc.data() || !participantDoc.data())
                 logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA)
@@ -487,19 +493,21 @@ export const checkAndPrepareCoordinatorForFinalization = functions
         const { ceremonyId } = data
         const userId = context.auth?.uid
 
+        const firestore = admin.firestore();
+
         // Look for the ceremony document.
         printLog(`fetching document for ceremonyId ${ceremonyId}`, LogLevel.DEBUG)
-        const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
+        const ceremonyDoc = await getDocumentById(firestore, commonTerms.collections.ceremonies.name, ceremonyId)
 
         printLog(`fetching coordinator documuent for userId ${userId}`, LogLevel.DEBUG)
-        const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyId), userId!)
+        const participantDoc = await getDocumentById(firestore, getParticipantsCollectionPath(ceremonyId), userId!)
 
         printLog(`checking both documents exist`, LogLevel.DEBUG)
         if (!ceremonyDoc.data() || !participantDoc.data()) logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA)
 
         // Get ceremony circuits.
         printLog("getting ceremony circuits", LogLevel.DEBUG)
-        const circuits = await getCeremonyCircuits(ceremonyId)
+        const circuits = await getCeremonyCircuits(firestore, ceremonyId)
         printLog("got ceremony circuits", LogLevel.DEBUG)
 
         // Extract data.

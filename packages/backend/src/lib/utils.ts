@@ -10,7 +10,7 @@ import admin from "firebase-admin"
 import dotenv from "dotenv"
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
-import { createWriteStream, fstat } from "node:fs"
+import { createWriteStream } from "node:fs"
 import { pipeline } from "node:stream"
 import { promisify } from "node:util"
 import { readFileSync } from "fs"
@@ -46,12 +46,10 @@ dotenv.config()
  * @returns <Promise<DocumentSnapshot<DocumentData>>> - the requested document w/ relative data.
  */
 export const getDocumentById = async (
+    firestore: admin.firestore.Firestore,
     collection: string,
     documentId: string
 ): Promise<DocumentSnapshot<DocumentData>> => {
-    // Prepare Firestore db instance.
-    const firestore = admin.firestore()
-
     // Get document.
     const doc = await firestore.collection(collection).doc(documentId).get()
 
@@ -78,9 +76,10 @@ export const sleep = async (ms: number): Promise<void> => setTimeout(ms)
  * @param ceremonyId <string> - the unique identifier of the ceremony.
  * @returns Promise<Array<FirebaseDocumentInfo>> - the ceremony' circuits documents ordered by sequence position.
  */
-export const getCeremonyCircuits = async (ceremonyId: string): Promise<Array<QueryDocumentSnapshot<DocumentData>>> => {
-    // Prepare Firestore db instance.
-    const firestore = admin.firestore()
+export const getCeremonyCircuits = async (
+    firestore: admin.firestore.Firestore,
+    ceremonyId: string
+): Promise<Array<QueryDocumentSnapshot<DocumentData>>> => {
 
     // Execute query.
     const querySnap = await firestore.collection(getCircuitsCollectionPath(ceremonyId)).get()
@@ -99,11 +98,10 @@ export const getCeremonyCircuits = async (ceremonyId: string): Promise<Array<Que
  * @returns Promise<Array<FirebaseDocumentInfo>> - the contributions of the ceremony circuit.
  */
 export const getCeremonyCircuitContributions = async (
+    firestore: admin.firestore.Firestore,
     ceremonyId: string,
     circuitId: string
 ): Promise<Array<QueryDocumentSnapshot<DocumentData>>> => {
-    // Prepare Firestore db instance.
-    const firestore = admin.firestore()
 
     // Execute query.
     const querySnap = await firestore.collection(getContributionsCollectionPath(ceremonyId, circuitId)).get()
@@ -122,27 +120,22 @@ export const getCeremonyCircuitContributions = async (
  * @returns <Promise<QuerySnapshot<DocumentData>>>
  */
 export const queryNotExpiredTimeouts = async (
+    firestore: admin.firestore.Firestore,
     ceremonyId: string,
     participantId: string
-): Promise<QuerySnapshot<DocumentData>> => {
-    // Prepare Firestore db.
-    const firestoreDb = admin.firestore()
-
-    // Execute and return query result.
-    return firestoreDb
-        .collection(getTimeoutsCollectionPath(ceremonyId, participantId))
-        .where(commonTerms.collections.timeouts.fields.endDate, ">=", getCurrentServerTimestampInMillis())
-        .get()
-}
+): Promise<QuerySnapshot<DocumentData>> => firestore
+    .collection(getTimeoutsCollectionPath(ceremonyId, participantId))
+    .where(commonTerms.collections.timeouts.fields.endDate, ">=", getCurrentServerTimestampInMillis())
+    .get()
 
 /**
  * Query for opened ceremonies.
  * @param firestoreDatabase <Firestore> - the Firestore service instance associated to the current Firebase application.
  * @returns <Promise<Array<FirebaseDocumentInfo>>>
  */
-export const queryOpenedCeremonies = async (): Promise<Array<QueryDocumentSnapshot<DocumentData>>> => {
-    const firestore = admin.firestore()
-    
+export const queryOpenedCeremonies = async (
+    firestore: admin.firestore.Firestore
+): Promise<Array<QueryDocumentSnapshot<DocumentData>>> => {
     const querySnap = await firestore
         .collection(commonTerms.collections.ceremonies.name)
         .where(commonTerms.collections.ceremonies.fields.state, "==", CeremonyState.OPENED)
@@ -161,11 +154,12 @@ export const queryOpenedCeremonies = async (): Promise<Array<QueryDocumentSnapsh
  * @returns Promise<QueryDocumentSnapshot<DocumentData>>
  */
 export const getCircuitDocumentByPosition = async (
+    firestore: admin.firestore.Firestore,
     ceremonyId: string,
     sequencePosition: number
 ): Promise<QueryDocumentSnapshot<DocumentData>> => {
     // Query for all ceremony circuits.
-    const circuits = await getCeremonyCircuits(ceremonyId)
+    const circuits = await getCeremonyCircuits(firestore, ceremonyId)
 
     // Apply a filter using the sequence postion.
     const matchedCircuits = circuits.filter(
@@ -347,11 +341,12 @@ export const queryCeremoniesByStateAndDate = async (
  * @returns Promise<QueryDocumentSnapshot<DocumentData>> - the final contribution for the ceremony circuit.
  */
 export const getFinalContribution = async (
+    firestore: admin.firestore.Firestore,
     ceremonyId: string,
     circuitId: string
 ): Promise<QueryDocumentSnapshot<DocumentData>> => {
     // Get contributions for the circuit.
-    const contributions = await getCeremonyCircuitContributions(ceremonyId, circuitId)
+    const contributions = await getCeremonyCircuitContributions(firestore, ceremonyId, circuitId)
 
     // Match the final one.
     const matchContribution = contributions.filter(
@@ -463,8 +458,11 @@ export const createSSMClient = async (): Promise<SSMClient> => {
  * @param circuitId <string> - the circuit id
  * @returns <Promise<string>> - the EC2 instance id
  */
-export const getEC2InstanceId = async (circuitId: string): Promise<string> => {
-    const circuitDoc = await getDocumentById(commonTerms.collections.circuits.name, circuitId)
+export const getEC2InstanceId = async (
+    firestore: admin.firestore.Firestore,
+    circuitId: string
+): Promise<string> => {
+    const circuitDoc = await getDocumentById(firestore, commonTerms.collections.circuits.name, circuitId)
 
     const circuitData = circuitDoc.data()
 

@@ -42,12 +42,13 @@ dotenv.config()
  * @param ceremonyId <string> - the unique identifier of the ceremony.
  */
 const checkPreConditionForCurrentContributorToInteractWithMultiPartUpload = async (
+    firestore: FirebaseFirestore.Firestore,
     contributorId: string,
     ceremonyId: string
 ) => {
     // Get ceremony and participant documents.
-    const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
-    const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyId), contributorId!)
+    const ceremonyDoc = await getDocumentById(firestore, commonTerms.collections.ceremonies.name, ceremonyId)
+    const participantDoc = await getDocumentById(firestore, getParticipantsCollectionPath(ceremonyId), contributorId!)
 
     // Get data from docs.
     const ceremonyData = ceremonyDoc.data()
@@ -68,12 +69,14 @@ const checkPreConditionForCurrentContributorToInteractWithMultiPartUpload = asyn
  * @param ceremonyId <string> - the unique identifier of the ceremony.
  * @param objectKey <string> - the object key of the file being uploaded.
  */
-const checkUploadingFileValidity = async (contributorId: string, ceremonyId: string, objectKey: string) => {
+const checkUploadingFileValidity = async (
+    firestore: FirebaseFirestore.Firestore,
+    contributorId: string, ceremonyId: string, objectKey: string) => {
     // Get the circuits for the ceremony
-    const circuits = await getCeremonyCircuits(ceremonyId)
+    const circuits = await getCeremonyCircuits(firestore, ceremonyId)
 
     // Get the participant document
-    const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyId), contributorId!)
+    const participantDoc = await getDocumentById(firestore, getParticipantsCollectionPath(ceremonyId), contributorId!)
     const participantData = participantDoc.data()
 
     if (!participantData) logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA)
@@ -343,7 +346,8 @@ export const startMultiPartUpload = functions
     .runWith({
         memory: "512MB"
     })
-    .https.onCall(async (data: StartMultiPartUploadData, context: functions.https.CallableContext): Promise<any> => {
+    .https.onCall(async (
+        data: StartMultiPartUploadData, context: functions.https.CallableContext): Promise<any> => {
         if (!context.auth || (!context.auth.token.participant && !context.auth.token.coordinator))
             logAndThrowError(COMMON_ERRORS.CM_NOT_AUTHENTICATED)
 
@@ -354,16 +358,18 @@ export const startMultiPartUpload = functions
         const { bucketName, objectKey, ceremonyId } = data
         const userId = context.auth?.uid
 
+        const firestore = admin.firestore()
+
         // Check if the user is a current contributor.
         if (context.auth?.token.participant && !!ceremonyId) {
             // Check pre-condition.
-            await checkPreConditionForCurrentContributorToInteractWithMultiPartUpload(userId!, ceremonyId)
+            await checkPreConditionForCurrentContributorToInteractWithMultiPartUpload(firestore, userId!, ceremonyId)
 
             // Check whether the bucket where the object for which we are generating the pre-signed url is dedicated to a ceremony.
             await checkIfBucketIsDedicatedToCeremony(bucketName)
 
             // Check the validity of the uploaded file.
-            await checkUploadingFileValidity(userId!, ceremonyId!, objectKey)
+            await checkUploadingFileValidity(firestore, userId!, ceremonyId!, objectKey)
         }
 
         // Connect to S3 client.
@@ -432,10 +438,12 @@ export const generatePreSignedUrlsParts = functions
             const { bucketName, objectKey, uploadId, numberOfParts, ceremonyId } = data
             const userId = context.auth?.uid
 
+            const firestore =  admin.firestore()
+
             // Check if the user is a current contributor.
             if (context.auth?.token.participant && !!ceremonyId) {
                 // Check pre-condition.
-                await checkPreConditionForCurrentContributorToInteractWithMultiPartUpload(userId!, ceremonyId)
+                await checkPreConditionForCurrentContributorToInteractWithMultiPartUpload(firestore, userId!, ceremonyId)
             }
 
             // Connect to S3 client.
@@ -505,10 +513,12 @@ export const completeMultiPartUpload = functions
         const { bucketName, objectKey, uploadId, parts, ceremonyId } = data
         const userId = context.auth?.uid
 
+        const firestore = admin.firestore()
+
         // Check if the user is a current contributor.
         if (context.auth?.token.participant && !!ceremonyId) {
             // Check pre-condition.
-            await checkPreConditionForCurrentContributorToInteractWithMultiPartUpload(userId!, ceremonyId)
+            await checkPreConditionForCurrentContributorToInteractWithMultiPartUpload(firestore, userId!, ceremonyId)
 
             // Check if the bucket is dedicated to a ceremony.
             await checkIfBucketIsDedicatedToCeremony(bucketName)

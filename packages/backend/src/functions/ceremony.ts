@@ -108,10 +108,6 @@ export const setupCeremony = functions
 
         // Prepare Firestore DB.
         const firestore = admin.firestore()
-        firestore.settings({
-            preferRest: true,
-            timestampsInSnapshots: true
-        })
         const batch = firestore.batch()
 
         // Prepare data.
@@ -240,10 +236,6 @@ export const initEmptyWaitingQueueForCircuit = functions
     .onCreate(async (doc: QueryDocumentSnapshot) => {
         // Prepare Firestore DB.
         const firestore = admin.firestore()
-        firestore.settings({
-            preferRest: true,
-            timestampsInSnapshots: true
-        })
 
         // Get circuit document identifier and data.
         const circuitId = doc.id
@@ -290,30 +282,25 @@ export const finalizeCeremony = functions
 
         // Prepare Firestore DB.
         const firestore = admin.firestore()
-        firestore.settings({
-            preferRest: true,
-            timestampsInSnapshots: true
-        })
-        const batch = firestore.batch()
 
         // Extract data.
         const { ceremonyId } = data
         const userId = context.auth?.uid
 
         // Look for the ceremony document.
-        const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
-        const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyId), userId!)
+        const ceremonyDoc = await getDocumentById(firestore, commonTerms.collections.ceremonies.name, ceremonyId)
+        const participantDoc = await getDocumentById(firestore, getParticipantsCollectionPath(ceremonyId), userId!)
 
         if (!ceremonyDoc.data() || !participantDoc.data()) logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA)
 
         // Get ceremony circuits.
-        const circuits = await getCeremonyCircuits(ceremonyId)
+        const circuits = await getCeremonyCircuits(firestore, ceremonyId)
 
         // Get final contribution for each circuit.
         // nb. the `getFinalContributionDocument` checks the existance of the final contribution document (if not present, throws).
         // Therefore, we just need to call the method without taking any data to verify the pre-condition of having already computed
         // the final contributions for each ceremony circuit.
-        for await (const circuit of circuits) await getFinalContribution(ceremonyId, circuit.id)
+        for await (const circuit of circuits) await getFinalContribution(firestore, ceremonyId, circuit.id)
 
         // Extract data.
         const { state } = ceremonyDoc.data()!
@@ -321,11 +308,7 @@ export const finalizeCeremony = functions
 
         // Pre-conditions: verify the ceremony is closed and coordinator is finalizing.
         if (state === CeremonyState.CLOSED && status === ParticipantStatus.FINALIZING) {
-            // Prepare txs for updates.
-            batch.update(ceremonyDoc.ref, { state: CeremonyState.FINALIZED })
-            batch.update(participantDoc.ref, {
-                status: ParticipantStatus.FINALIZED
-            })
+            const batch = firestore.batch()
 
             // Check for VM termination (if any).
             for (const circuit of circuits) {
@@ -341,6 +324,12 @@ export const finalizeCeremony = functions
                     await terminateEC2Instance(ec2Client, vm.vmInstanceId)
                 }
             }
+
+            // Prepare txs for updates.
+            batch.update(ceremonyDoc.ref, { state: CeremonyState.FINALIZED })
+            batch.update(participantDoc.ref, {
+                status: ParticipantStatus.FINALIZED
+            })
 
             // Send txs.
             await batch.commit()

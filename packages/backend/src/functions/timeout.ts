@@ -48,15 +48,11 @@ export const checkAndRemoveBlockingContributor = functions
     .onRun(async () => {
         // Prepare Firestore DB.
         const firestore = admin.firestore()
-        firestore.settings({
-            preferRest: true,
-            timestampsInSnapshots: true
-        })
         // Get current server timestamp in milliseconds.
         const currentServerTimestamp = getCurrentServerTimestampInMillis()
 
         // Get opened ceremonies.
-        const ceremonies = await queryOpenedCeremonies()
+        const ceremonies = await queryOpenedCeremonies(firestore)
 
         // For each ceremony.
         for (const ceremony of ceremonies) {
@@ -65,7 +61,7 @@ export const checkAndRemoveBlockingContributor = functions
                 printLog(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA.message, LogLevel.WARN)
             else {
                 // Get ceremony circuits.
-                const circuits = await getCeremonyCircuits(ceremony.id)
+                const circuits = await getCeremonyCircuits(firestore, ceremony.id)
 
                 // Extract ceremony data.
                 const { timeoutMechanismType, penalty } = ceremony.data()!
@@ -106,6 +102,7 @@ export const checkAndRemoveBlockingContributor = functions
                         else {
                             // Get current contributor document.
                             const participant = await getDocumentById(
+                                firestore,
                                 getParticipantsCollectionPath(ceremony.id),
                                 currentContributor
                             )
@@ -189,6 +186,7 @@ export const checkAndRemoveBlockingContributor = functions
 
                                         // Get the document of the next current contributor.
                                         const nextCurrentContributor = await getDocumentById(
+                                            firestore,
                                             getParticipantsCollectionPath(ceremony.id),
                                             nextCurrentContributorId
                                         )
@@ -269,9 +267,11 @@ export const resumeContributionAfterTimeoutExpiration = functions
         const { ceremonyId } = data
         const userId = context.auth?.uid
 
+        const firestore = admin.firestore();
+
         // Look for the ceremony document.
-        const ceremonyDoc = await getDocumentById(commonTerms.collections.ceremonies.name, ceremonyId)
-        const participantDoc = await getDocumentById(getParticipantsCollectionPath(ceremonyId), userId!)
+        const ceremonyDoc = await getDocumentById(firestore, commonTerms.collections.ceremonies.name, ceremonyId)
+        const participantDoc = await getDocumentById(firestore, getParticipantsCollectionPath(ceremonyId), userId!)
 
         // Prepare documents data.
         const participantData = participantDoc.data()
