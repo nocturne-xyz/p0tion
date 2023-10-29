@@ -104,7 +104,7 @@ export const uploadParts = async (
         const response = await fetch(chunksWithUrls[i].preSignedUrl, {
             retryOptions: {
                 retryInitialDelay: 500, // 500 ms.
-                socketTimeout: 60000, // 60 seconds.
+                socketTimeout: 120000, // 2 minutes.
                 retryMaxDuration: 300000 // 5 minutes.
             },
             method: "PUT",
