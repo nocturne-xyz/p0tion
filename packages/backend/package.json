@@ -67,7 +67,7 @@
         "@aws-sdk/client-ssm": "^3.357.0",
         "@aws-sdk/middleware-endpoint": "^3.329.0",
         "@aws-sdk/s3-request-presigner": "^3.329.0",
-        "@nocturne-xyz/p0tion-actions": "0.1.4",
+        "@nocturne-xyz/p0tion-actions": "0.1.6",
         "async-mutex": "^0.4.0",
         "blakejs": "^1.2.1",
         "dotenv": "^16.0.3",

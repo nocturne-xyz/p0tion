@@ -4161,7 +4161,7 @@ __metadata:
   dependencies:
     "@adobe/node-fetch-retry": ^2.2.0
     "@aws-sdk/client-s3": ^3.329.0
-    "@nocturne-xyz/p0tion-actions": 0.1.5
+    "@nocturne-xyz/p0tion-actions": 0.1.6
     "@octokit/auth-oauth-app": ^5.0.5
     "@octokit/auth-oauth-device": ^4.0.4
     "@octokit/request": ^6.2.3
@@ -4210,7 +4210,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nocturne-xyz/p0tion-actions@0.1.5, @nocturne-xyz/p0tion-actions@workspace:packages/actions":
+"@nocturne-xyz/p0tion-actions@0.1.6, @nocturne-xyz/p0tion-actions@workspace:packages/actions":
   version: 0.0.0-use.local
   resolution: "@nocturne-xyz/p0tion-actions@workspace:packages/actions"
   dependencies:
@@ -4251,34 +4251,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nocturne-xyz/p0tion-actions@npm:0.1.4":
-  version: 0.1.4
-  resolution: "@nocturne-xyz/p0tion-actions@npm:0.1.4"
-  dependencies:
-    "@adobe/node-fetch-retry": ^2.2.0
-    "@aws-sdk/client-ec2": ^3.358.0
-    "@aws-sdk/client-s3": ^3.329.0
-    "@aws-sdk/client-ssm": ^3.358.0
-    "@octokit/auth-oauth-device": ^4.0.4
-    "@types/winston": ^2.4.4
-    blakejs: ^1.2.1
-    chai: ^4.3.7
-    chai-as-promised: ^7.1.1
-    cli-progress: ^3.12.0
-    dotenv: ^16.0.3
-    ethers: ^5.7.2
-    ffjavascript: ^0.2.57
-    firebase: ^9.21.0
-    firebase-admin: ^11.8.0
-    googleapis: ^118.0.0
-    rimraf: ^5.0.0
-    rollup: ^3.21.6
-    snarkjs: ^0.6.11
-    solc: ^0.8.19
-  checksum: 9025423886877292b26c2c3e68cb390eb547edb124460c6828ade9fbb69bf21bdf88859c379ac8838f0a41bf328e1243f9a3419b49d7a1a14678fe0665f721f6
-  languageName: node
-  linkType: hard
-
 "@nocturne-xyz/p0tion-backend@workspace:packages/backend":
   version: 0.0.0-use.local
   resolution: "@nocturne-xyz/p0tion-backend@workspace:packages/backend"
@@ -4290,7 +4262,7 @@ __metadata:
     "@aws-sdk/middleware-endpoint": ^3.329.0
     "@aws-sdk/s3-request-presigner": ^3.329.0
     "@firebase/rules-unit-testing": ^2.0.7
-    "@nocturne-xyz/p0tion-actions": 0.1.4
+    "@nocturne-xyz/p0tion-actions": 0.1.6
     "@types/rollup-plugin-auto-external": ^2.0.2
     "@types/uuid": ^9.0.1
     async-mutex: ^0.4.0
