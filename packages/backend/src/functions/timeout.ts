@@ -42,12 +42,17 @@ dotenv.config()
 export const checkAndRemoveBlockingContributor = functions
     .region("us-central1")
     .runWith({
-        memory: "512MB"
+        memory: "512MB",
+        timeoutSeconds: 540
     })
     .pubsub.schedule("every 1 minutes")
     .onRun(async () => {
         // Prepare Firestore DB.
         const firestore = admin.firestore()
+        firestore.settings({
+            preferRest: true
+        });
+
         // Get current server timestamp in milliseconds.
         const currentServerTimestamp = getCurrentServerTimestampInMillis()
 
@@ -72,7 +77,7 @@ export const checkAndRemoveBlockingContributor = functions
                         printLog(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA.message, LogLevel.WARN)
                     else {
                         // Extract circuit data.
-                        const { waitingQueue, avgTimings, dynamicThreshold, fixedTimeWindow } = circuit.data()
+                        const { waitingQueue, avgTimings, dynamicThreshold, fixedTimeWindow, sequencePosition } = circuit.data()
                         const { contributors, currentContributor, failedContributions, completedContributions } =
                             waitingQueue
                         const {
@@ -80,6 +85,82 @@ export const checkAndRemoveBlockingContributor = functions
                             contributionComputation: avgContributionComputation,
                             verifyCloudFunction: avgVerifyCloudFunction
                         } = avgTimings
+
+                        // HACK if using fixed timout, circuit sequence position is 1, and window is set to 0,
+                        // boot all contributors from the queue and delete all users with `contributionStartedAt = 0`
+                        if (timeoutMechanismType === CeremonyTimeoutType.FIXED && sequencePosition === 1 && fixedTimeWindow === 0) {
+
+                            // axe queue to stop progress
+                            await circuit.ref.update({
+                                waitingQueue: {
+                                    ...waitingQueue,
+                                    contributors: [],
+                                    currentContributor: "",
+                                    failedContributions: failedContributions + contributors.length
+                                },
+                                lastUpdated: getCurrentServerTimestampInMillis()
+                            })
+
+                            // time everyone out and collect list of users to fully delete
+                            const usersToDelete = (await Promise.all(contributors.map(async (contributorId: string) => {
+                                const contributorDoc = await getDocumentById(
+                                    firestore,
+                                    getParticipantsCollectionPath(ceremony.id),
+                                    contributorId
+                                );
+
+                                if (!contributorDoc.data()) {
+                                    logAndThrowError(COMMON_ERRORS.CM_INEXISTENT_DOCUMENT_DATA);
+                                }
+
+                                const { contributionStartedAt } = contributorDoc.data()!;
+
+                                if (contributionStartedAt === 0) {
+                                    await contributorDoc.ref.delete();
+                                    return contributorId; 
+                                }
+
+                                const batch = firestore.batch();
+
+                                const timeout = await firestore
+                                    .collection(getTimeoutsCollectionPath(ceremony.id, contributorId))
+                                    .doc()
+                                    .get()
+
+                                const timeoutPenaltyInMs = Number(penalty) * 60000 // 60000 = amount of ms x minute.
+                                batch.update(contributorDoc.ref, {
+                                    status: ParticipantStatus.TIMEDOUT,
+                                    lastUpdated: getCurrentServerTimestampInMillis()
+                                });
+                                batch.create(timeout.ref, {
+                                    type: TimeoutType.BLOCKING_CONTRIBUTION,
+                                    startDate: currentServerTimestamp,
+                                    endDate: currentServerTimestamp + timeoutPenaltyInMs
+                                });
+
+                                await batch.commit();
+                                return undefined;
+                            }))).filter(userId => userId !== undefined);
+
+                            // delete all users with `contributionStartedAt = 0`
+                            const docs = await Promise.all(usersToDelete.map(userId =>
+                                getDocumentById(
+                                    firestore,
+                                    commonTerms.collections.users.name,
+                                    userId
+                                )
+                            ));
+
+                            const batch = firestore.batch();
+                            for (const doc of docs) {
+                                batch.delete(doc.ref);
+                            }
+                            await batch.commit();
+
+                            // remove them all from the auth table
+                            const auth = admin.auth();
+                            await Promise.all(usersToDelete.map(userId => auth.deleteUser(userId)));
+                        }
 
                         // Case (A).
                         if (!currentContributor)
