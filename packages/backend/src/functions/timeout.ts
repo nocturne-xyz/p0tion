@@ -49,9 +49,6 @@ export const checkAndRemoveBlockingContributor = functions
     .onRun(async () => {
         // Prepare Firestore DB.
         const firestore = admin.firestore()
-        firestore.settings({
-            preferRest: true
-        });
 
         // Get current server timestamp in milliseconds.
         const currentServerTimestamp = getCurrentServerTimestampInMillis()
@@ -69,7 +66,7 @@ export const checkAndRemoveBlockingContributor = functions
                 const circuits = await getCeremonyCircuits(firestore, ceremony.id)
 
                 // Extract ceremony data.
-                const { timeoutMechanismType, penalty } = ceremony.data()!
+                const { timeoutType: timeoutMechanismType, penalty } = ceremony.data()!
 
                 for (const circuit of circuits) {
                     if (!circuit.data())
@@ -88,6 +85,7 @@ export const checkAndRemoveBlockingContributor = functions
 
                         // HACK if using fixed timout, circuit sequence position is 1, and window is set to 0,
                         // boot all contributors from the queue and delete all users with `contributionStartedAt = 0`
+                        printLog(`timeoutMechanismType: ${timeoutMechanismType}, sequencePosition: ${sequencePosition}, fixedTimeWindow: ${fixedTimeWindow}`, LogLevel.DEBUG)
                         if (timeoutMechanismType === CeremonyTimeoutType.FIXED && sequencePosition === 1 && fixedTimeWindow === 0) {
 
                             // axe queue to stop progress
@@ -100,6 +98,8 @@ export const checkAndRemoveBlockingContributor = functions
                                 },
                                 lastUpdated: getCurrentServerTimestampInMillis()
                             })
+
+                            printLog('Updated the queue', LogLevel.DEBUG)
 
                             // time everyone out and collect list of users to fully delete
                             const usersToDelete = (await Promise.all(contributors.map(async (contributorId: string) => {
@@ -132,15 +132,19 @@ export const checkAndRemoveBlockingContributor = functions
                                     status: ParticipantStatus.TIMEDOUT,
                                     lastUpdated: getCurrentServerTimestampInMillis()
                                 });
+
+                                printLog(`${contributorDoc.id} timed out`, LogLevel.DEBUG)
                                 batch.create(timeout.ref, {
                                     type: TimeoutType.BLOCKING_CONTRIBUTION,
                                     startDate: currentServerTimestamp,
                                     endDate: currentServerTimestamp + timeoutPenaltyInMs
                                 });
-
+                                printLog(`${contributorDoc.id} blocking out`, LogLevel.DEBUG)
                                 await batch.commit();
                                 return undefined;
                             }))).filter(userId => userId !== undefined);
+
+                            printLog(`We found ${usersToDelete.length} users to delete`, LogLevel.DEBUG)
 
                             // delete all users with `contributionStartedAt = 0`
                             const docs = await Promise.all(usersToDelete.map(userId =>
@@ -157,9 +161,13 @@ export const checkAndRemoveBlockingContributor = functions
                             }
                             await batch.commit();
 
+                            printLog(`Deleted ${docs.length}`, LogLevel.DEBUG)
+
                             // remove them all from the auth table
                             const auth = admin.auth();
                             await Promise.all(usersToDelete.map(userId => auth.deleteUser(userId)));
+
+                            printLog(`Deleted ${usersToDelete.length} users from auth`, LogLevel.DEBUG)
                         }
 
                         // Case (A).
@@ -199,14 +207,12 @@ export const checkAndRemoveBlockingContributor = functions
                                 // Case (C).
 
                                 // Compute dynamic timeout threshold.
-                                const timeoutDynamicThreshold =
-                                    timeoutMechanismType === CeremonyTimeoutType.DYNAMIC
+                                const timeoutDynamicThreshold = timeoutMechanismType === CeremonyTimeoutType.DYNAMIC
                                         ? (avgFullContribution / 100) * Number(dynamicThreshold)
                                         : 0
 
                                 // Compute the timeout expiration date (in ms).
-                                const timeoutExpirationDateInMsForBlockingContributor =
-                                    timeoutMechanismType === CeremonyTimeoutType.DYNAMIC
+                                const timeoutExpirationDateInMsForBlockingContributor = timeoutMechanismType === CeremonyTimeoutType.DYNAMIC
                                         ? Number(contributionStartedAt) +
                                           Number(avgFullContribution) +
                                           Number(timeoutDynamicThreshold)
